@@ -48,6 +48,10 @@ import { AuthContext } from '../context/AuthContext';
 const ProtectedRoute = ({ children }) => {
   const { currentUser } = useContext(AuthContext);
 
+  if (!currentUser) {
+    console.log('User is not authenticated, redirecting to login...');
+  }
+
   return currentUser ? children : <Navigate to="/login" />;
 };
 
