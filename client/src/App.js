@@ -160,12 +160,54 @@
 
 
 // 1.4
+// import React from 'react';
+// import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+// import './App.css';
+// import Login from './components/Login';
+// import Register from './components/Register';
+// import Home from './components/Home';
+// import Profile from './components/Profile'; // Import Profile component
+// import { AuthProvider } from './context/AuthContext';
+// import ProtectedRoute from './components/ProtectedRoute';
+
+// function App() {
+//   return (
+//     <AuthProvider>
+//       <Router>
+//         <div className="App">
+//           <header className="App-header">
+//             <Routes>
+//               <Route path="/login" element={<Login />} />
+//               <Route path="/register" element={<Register />} />
+//               <Route path="/" element={
+//                 <ProtectedRoute>
+//                   <Home />
+//                 </ProtectedRoute>
+//               } />
+//               <Route path="/profile" element={
+//                 <ProtectedRoute>
+//                   <Profile />
+//                 </ProtectedRoute>
+//               } />
+//             </Routes>
+//           </header>
+//         </div>
+//       </Router>
+//     </AuthProvider>
+//   );
+// }
+
+// export default App;
+
+//2.2
+// App.js
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import './App.css';
 import Login from './components/Login';
 import Home from './components/Home';
-import Profile from './components/Profile'; // Import Profile component
+import Profile from './components/Profile';
+import Register from './components/Register'; // Import Register component
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -177,6 +219,7 @@ function App() {
           <header className="App-header">
             <Routes>
               <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} /> {/* Add Register route */}
               <Route path="/" element={
                 <ProtectedRoute>
                   <Home />
@@ -196,6 +239,7 @@ function App() {
 }
 
 export default App;
+
 
 
 

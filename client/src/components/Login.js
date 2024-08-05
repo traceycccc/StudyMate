@@ -242,10 +242,55 @@
 
 
 //ver 1.35
+// import React from 'react';
+// import axios from 'axios';
+// import { auth, googleProvider, signInWithPopup } from '../firebase';
+// import { useNavigate, Link } from 'react-router-dom';
+
+// const Login = () => {
+//   const navigate = useNavigate();
+
+//   const handleLogin = async () => {
+//     try {
+//       const result = await signInWithPopup(auth, googleProvider);
+//       const { user } = result;
+
+//       // Prepare user data to send to the backend
+//       const userData = {
+//         uid: user.uid,
+//         email: user.email,
+//         displayName: user.displayName
+//       };
+
+//       // Send user data to the backend
+//       await axios.post('http://localhost:5000/api/saveUser', userData);
+
+//       // Redirect to the homepage
+//       navigate('/');
+//     } catch (error) {
+//       console.error("Error during login", error);
+//     }
+//   };
+
+//   return (
+//     <div>
+//       <h1>Login to StudyMate</h1>
+//       <button onClick={handleLogin}>Login with Google</button>
+//       <p>
+//         No account? <Link to="/register">Create one!</Link>
+//       </p>
+//     </div>
+//   );
+// };
+
+// export default Login;
+
+
+//2.1
 import React from 'react';
 import axios from 'axios';
 import { auth, googleProvider, signInWithPopup } from '../firebase';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -262,13 +307,19 @@ const Login = () => {
         displayName: user.displayName
       };
 
-      // Send user data to the backend
-      await axios.post('http://localhost:5000/api/saveUser', userData);
+      console.log('Sending user data to backend:', userData);
+      // Send user data to the backend for login
+      const response = await axios.post('http://localhost:5000/api/loginUserGoogle', userData);
 
-      // Redirect to the homepage
-      navigate('/');
+      if (response.status === 200) {
+        // Redirect to the homepage
+        navigate('/');
+      }
     } catch (error) {
       console.error("Error during login", error);
+      if (error.response && error.response.status === 404) {
+        alert('User not found! Please try again!');
+      }
     }
   };
 
@@ -276,9 +327,14 @@ const Login = () => {
     <div>
       <h1>Login to StudyMate</h1>
       <button onClick={handleLogin}>Login with Google</button>
+      <p>
+        No account? <Link to="/register">Create one!</Link>
+      </p>
     </div>
   );
 };
 
 export default Login;
+
+
 
