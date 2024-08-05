@@ -121,7 +121,11 @@
 //ver 2.1
 const express = require('express');
 const router = express.Router();
+const bcrypt = require('bcryptjs');
 const User = require('../client/src/models/Users');
+//const jwt = require('jsonwebtoken');
+
+//const JWT_SECRET = 'your_jwt_secret'; // Replace with a strong, unique secret
 
 // Register a user with Google
 // router.post('/registerUserGoogle', async (req, res) => {
@@ -207,7 +211,6 @@ router.post('/registerUserGoogle', async (req, res) => {
   }
 });
 
-module.exports = router;
 
 router.post('/testRegister', async (req, res) => {
   try {
@@ -236,6 +239,67 @@ router.post('/testRegister', async (req, res) => {
   }
 });
 
+// router.post('/registerUserManual', async (req, res) => {
+//   try {
+//     const { uid, name, email, password } = req.body;
+
+//     // Check if email already exists
+//     const existingUserByEmail = await User.findOne({ email });
+//     if (existingUserByEmail) {
+//       return res.status(400).json({ message: 'The email is already registered!' });
+//     }
+
+//     // Check if UID already exists
+//     const existingUserByUID = await User.findOne({ uid });
+//     if (existingUserByUID) {
+//       return res.status(400).json({ message: 'The UID is already registered!' });
+//     }
+
+//     const newUser = new User({ uid, name, email, password });
+
+//     await newUser.save();
+
+//     res.status(200).json({ message: 'User registered successfully' });
+//   } catch (error) {
+//     console.error('Error during manual user registration:', error);
+//     res.status(500).json({ message: 'Server Error', error: error.message });
+//   }
+// });
+
+router.post('/registerUserManual', async (req, res) => {
+  try {
+    const { uid, name, email, password } = req.body;
+
+    // Check if email already exists
+    const existingUserByEmail = await User.findOne({ email });
+    if (existingUserByEmail) {
+      return res.status(400).json({ message: 'The email is already registered!' });
+    }
+
+    // Check if UID already exists
+    const existingUserByUID = await User.findOne({ uid });
+    if (existingUserByUID) {
+      return res.status(400).json({ message: 'The UID is already registered!' });
+    }
+
+    // Hash the password before saving
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    console.log('Password:', password);
+    console.log('Hashed Password:', hashedPassword);
+
+    const newUser = new User({ uid, name, email, password: hashedPassword });
+
+    await newUser.save();
+
+    res.status(200).json({ message: 'User registered successfully' });
+  } catch (error) {
+    console.error('Error during manual user registration:', error);
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+});
+
 
 // Login a user with Google
 router.post('/loginUserGoogle', async (req, res) => {
@@ -254,6 +318,139 @@ router.post('/loginUserGoogle', async (req, res) => {
     res.status(500).json({ message: 'Server Error' });
   }
 });
+
+
+// // Manual login endpoint
+// router.post('/loginUserManual', async (req, res) => {
+//   const { email, password } = req.body;
+
+//   try {
+//     const user = await User.findOne({ email });
+//     if (!user) {
+//       return res.status(400).json({ message: 'Invalid email or password' });
+//     }
+
+//     const isMatch = await bcrypt.compare(password, user.password);
+//     if (!isMatch) {
+//       return res.status(400).json({ message: 'Invalid email or password' });
+//     }
+
+//     // Optional: Generate a JWT token if you want to use it for authentication
+//     // const token = jwt.sign({ userId: user._id }, 'your_jwt_secret', { expiresIn: '1h' });
+
+//     res.status(200).json({
+//       message: 'Login successful',
+//       // token // Uncomment if using JWT tokens
+//     });
+//   } catch (error) {
+//     console.error('Error during login:', error);
+//     res.status(500).json({ message: 'Server error' });
+//   }
+// });
+
+// router.post('/loginUserManual', async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
+
+//     // Check if user exists
+//     const user = await User.findOne({ email });
+//     if (!user) {
+//       return res.status(400).json({ message: 'Invalid email or password' });
+//     }
+
+//     // Compare passwords
+//     const isMatch = await bcrypt.compare(password, user.password);
+//     if (!isMatch) {
+//       return res.status(400).json({ message: 'Invalid email or password' });
+//     }
+
+//     // Generate a JWT token
+//     const token = jwt.sign({ uid: user.uid }, 'your_jwt_secret', { expiresIn: '1h' });
+
+//     res.status(200).json({ message: 'Login successful', token });
+//   } catch (error) {
+//     console.error('Error during manual login:', error);
+//     res.status(500).json({ message: 'Server Error', error: error.message });
+//   }
+// });
+
+// router.post('/loginUserManual', async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
+
+//     console.log('Login attempt with:', { email, password });
+
+//     // Check if user exists
+//     const user = await User.findOne({ email });
+//     if (!user) {
+//       console.log('User not found');
+//       return res.status(400).json({ message: 'Invalid email or password, user not found' });
+//     }
+
+//     console.log('User found:', { email: user.email, storedPasswordHash: user.password });
+
+//     // Compare passwords
+//     const isMatch = await bcrypt.compare(password, user.password);
+
+//     console.log('Password comparison:', {
+//       inputPassword: password,
+//       storedPasswordHash: user.password,
+//       isMatch
+//     });
+
+//     if (!isMatch) {
+//       console.log('Password does not match');
+//       return res.status(400).json({ message: 'Invalid email or password' });
+//     }
+
+//     // Generate a JWT token
+//     //const token = jwt.sign({ uid: user.uid }, 'your_jwt_secret', { expiresIn: '1h' });
+
+//     res.status(200).json({ message: 'Login successful', token });
+//   } catch (error) {
+//     console.error('Error during manual login:', error);
+//     res.status(500).json({ message: 'Server Error', error: error.message });
+//   }
+// });
+
+
+router.post('/loginUserManual', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    console.log('Login attempt with:', { email, password });
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      console.log('User not found');
+      return res.status(400).json({ message: 'Invalid email or password' });
+    }
+
+    console.log('User found:', { email: user.email, storedPasswordHash: user.password });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    console.log('Password comparison:', {
+      inputPassword: password,
+      storedPasswordHash: user.password,
+      isMatch
+    });
+
+    if (!isMatch) {
+      console.log('Password does not match');
+      return res.status(400).json({ message: 'Invalid email or password' });
+    }
+
+    // Respond with success message (or redirect, or handle session as needed)
+    res.status(200).json({ message: 'Login successful' });
+
+  } catch (error) {
+    console.error('Error during manual login:', error);
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+});
+
+
 
 // Fetch user data by ID, for profile display
 router.get('/users/:id', async (req, res) => {
