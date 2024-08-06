@@ -168,7 +168,7 @@
 //2.1
 import React, { createContext, useState, useEffect } from 'react';
 import { auth } from '../firebase';
-import axios from 'axios';
+
 
 export const AuthContext = createContext();
 
