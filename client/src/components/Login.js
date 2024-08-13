@@ -185,6 +185,35 @@ const Login = () => {
   //   }
   // };
 
+  // const handleLoginWithGoogle = async () => {
+  //   try {
+  //     const result = await signInWithPopup(auth, googleProvider);
+  //     const { user } = result;
+  
+  //     const userData = {
+  //       uid: user.uid,
+  //       email: user.email,
+  //       displayName: user.displayName
+  //     };
+  
+  //     const response = await axios.post('http://localhost:5000/api/loginUserGoogle', userData);
+  //     console.log('Full response data:', response.data); // Log the full response data
+  
+  //     const isLinked = response.data.isLinked;
+  //     console.log('isLinked:', isLinked);
+  
+  //     if (isLinked) {
+  //       navigate('/');
+  //     } else {
+  //       alert(response.data.message);
+  //       navigate('/link-account', { state: { email: user.email, uid: user.uid } });
+  //     }
+  //   } catch (error) {
+  //     console.error('Error during login:', error.response ? error.response.data : error.message);
+  //     alert('An error occurred during login. Please try again.');
+  //   }
+  // };
+
   const handleLoginWithGoogle = async () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
@@ -197,22 +226,34 @@ const Login = () => {
       };
   
       const response = await axios.post('http://localhost:5000/api/loginUserGoogle', userData);
-      console.log('Full response data:', response.data); // Log the full response data
   
-      const isLinked = response.data.isLinked;
-      console.log('isLinked:', isLinked);
+      if (response.status === 200) {
+        console.log('Full response data:', response.data); // Log the full response data
+        
+        const { isLinked, hasPassword } = response.data;
+        console.log('isLinked:', isLinked);
+        console.log('hasPassword:', hasPassword);
   
-      if (isLinked) {
-        navigate('/');
+        if (isLinked) {
+          // User's account is linked, redirect to home page
+          navigate('/');
+        } else if (!hasPassword) {
+          // User is registered with Google, no need to link, redirect to home page
+          navigate('/');
+        } else {
+          // User has a manual account and is not linked, redirect to link account page
+          alert(response.data.message);
+          navigate('/link-account', { state: { email: user.email, uid: user.uid } });
+        }
       } else {
-        alert(response.data.message);
-        navigate('/link-account', { state: { email: user.email, uid: user.uid } });
+        alert('An error occurred during login. Please try again.');
       }
     } catch (error) {
       console.error('Error during login:', error.response ? error.response.data : error.message);
       alert('An error occurred during login. Please try again.');
     }
   };
+  
   
   
   
