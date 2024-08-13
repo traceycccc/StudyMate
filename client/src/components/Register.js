@@ -170,10 +170,11 @@ const Register = () => {
   const handleRegisterWithGoogle = async () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
-      const { user } = result;
+      const { user } = result;   //firebase user object
+      //const user = result.user; // Firebase user object
 
       const userData = {
-        uid: user.uid,
+        uid: user.uid,  //firebase UID
         email: user.email,
         displayName: user.displayName
       };

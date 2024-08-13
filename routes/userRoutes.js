@@ -748,7 +748,9 @@ router.post('/registerUserGoogle', async (req, res) => {
   const { uid, displayName, email } = req.body;
 
   try {
-    let user = await User.findOne({ uid });
+    //let user = await User.findOne({ uid });  //5.2 uid
+    //let user = await User.findOne({ uid, email }); //6.1 adding email parameter to prevent linking google account and manuals
+    let user = await User.findOne({ email }); //6.2 check using email instead
     if (user) {
       return res.status(400).json({ message: 'The Google Account is already registered! Please try again!' });
     }
@@ -852,6 +854,111 @@ router.post('/verifyOTP', async (req, res) => {
 
 
 
+// // Login a user with Google
+// router.post('/loginUserGoogle', async (req, res) => {
+//   const { uid } = req.body;
+
+//   try {
+//     const user = await User.findOne({ uid });
+
+//     if (!user) {
+//       return res.status(404).json({ message: 'User not found! Please try agains!' });
+//     }
+
+//     res.status(200).json(user);
+//   } catch (error) {
+//     console.error('Error logging in user:', error);
+//     res.status(500).json({ message: 'Server Error' });
+//   }
+// });
+
+//7.1
+// Login a user with Google
+// router.post('/loginUserGoogle', async (req, res) => {
+//   const { uid, email } = req.body;
+
+//   try {
+//     const user = await User.findOne({ uid });
+
+//     if (!user) {
+//       // Check if there's a manually registered account with the same email
+//       const manualUser = await User.findOne({ email });
+//       if (manualUser) {
+//         // Manual account found, but not linked
+//         if (!manualUser.isLinked) {
+//           return res.status(200).json({ message: 'Manual account found. Would you like to link?', isLinked: false });
+//         }
+//       } else {
+//         return res.status(404).json({ message: 'User not found! Please try again!' });
+//       }
+//     }
+
+//     // User found and linked, proceed with login
+//     res.status(200).json({ user, isLinked: true });
+//   } catch (error) {
+//     console.error('Error logging in user:', error);
+//     res.status(500).json({ message: 'Server Error' });
+//   }
+// });
+
+//7.2
+// Login a user with Google
+// router.post('/loginUserGoogle', async (req, res) => {
+//   const { uid, email } = req.body;
+
+//   try {
+//     const user = await User.findOne({ uid });
+
+//     if (!user) {
+//       // Check if a manually registered user with the same email exists
+//       const manualUser = await User.findOne({ email, isLinked: false });
+
+//       if (manualUser) {
+//         // Manually registered user found, but not linked to Google
+//         return res.status(200).json({
+//           isLinked: false,
+//           message: 'Your Google account is not linked to your manually registered account. Please verify your identity to link the accounts.',
+//         });
+//       }
+
+//       return res.status(404).json({ message: 'User not found! Please try again.' });
+//     }
+
+//     // If the user is found, check if the account is linked
+//     res.status(200).json({
+//       isLinked: true,
+//       message: 'Login successful!',
+//     });
+//   } catch (error) {
+//     console.error('Error logging in user:', error);
+//     res.status(500).json({ message: 'Server Error' });
+//   }
+// });
+
+
+//7.3
+// Login a user with Google
+// router.post('/loginUserGoogle', async (req, res) => {
+//   const { uid } = req.body;
+
+//   try {
+//     const user = await User.findOne({ uid });
+
+//     if (!user) {
+//       return res.status(404).json({ message: 'User not found! Please try again!' });
+//     }
+
+//     // Log the isLinked value
+//     console.log('Backend isLinked:', user.isLinked);
+
+//     res.status(200).json({ isLinked: user.isLinked, message: 'Login successful', redirect: null });
+//   } catch (error) {
+//     console.error('Error logging in user:', error);
+//     res.status(500).json({ message: 'Server Error' });
+//   }
+// });
+
+//7.4
 // Login a user with Google
 router.post('/loginUserGoogle', async (req, res) => {
   const { uid } = req.body;
@@ -860,12 +967,49 @@ router.post('/loginUserGoogle', async (req, res) => {
     const user = await User.findOne({ uid });
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found! Please try agains!' });
+      return res.status(404).json({ message: 'User not found! Please try again!' });
     }
 
-    res.status(200).json(user);
+    // Ensure no manipulation of user.isLinked here
+    console.log('Backend isLinked:', user.isLinked);
+
+    res.status(200).json({ isLinked: user.isLinked, message: 'Login successful', redirect: null });
   } catch (error) {
     console.error('Error logging in user:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+
+
+
+//7.1
+// Link a manually registered account with a Google account
+router.post('/linkAccount', async (req, res) => {
+  const { email, password, uid } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Verify the password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Invalid password' });
+    }
+
+    // Update the user to link their account with Google
+    user.uid = uid;
+    user.isLinked = true;
+
+    await user.save();
+
+    res.status(200).json({ message: 'Account linked successfully' });
+  } catch (error) {
+    console.error('Error linking account:', error);
     res.status(500).json({ message: 'Server Error' });
   }
 });

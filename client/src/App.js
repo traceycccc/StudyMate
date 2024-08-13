@@ -208,6 +208,7 @@ import Login from './components/Login';
 import Home from './components/Home';
 import Profile from './components/Profile';
 import ForgotPassword from './components/ForgotPassword';
+import LinkAccount from './components/LinkAccount';
 import Register from './components/Register'; // Import Register component
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -222,6 +223,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} /> {/* Add Register route */}
               <Route path="/forgot-password" element={<ForgotPassword />} /> {/* Add Register route */}
+              <Route path="/link-account" element={<LinkAccount />} />
               <Route path="/" element={
                 <ProtectedRoute>
                   <Home />
