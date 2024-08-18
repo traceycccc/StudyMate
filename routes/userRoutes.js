@@ -1047,7 +1047,7 @@ router.post('/loginUserManual', async (req, res) => {
     // Generate a JWT token if needed (optional)
     // const token = jwt.sign({ uid: user.uid }, 'your_jwt_secret', { expiresIn: '1h' });
 
-    res.status(200).json({ message: 'Login successful' });
+    res.status(200).json({ message: 'Login successful', user: user });
   } catch (error) {
     console.error('Error during manual login:', error);
     res.status(500).json({ message: 'Server Error', error: error.message });

@@ -42,17 +42,17 @@
 
 // src/components/ProtectedRoute.js
 import React, { useContext } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
 const ProtectedRoute = ({ children }) => {
   const { currentUser } = useContext(AuthContext);
+  const location = useLocation();
 
-  if (!currentUser) {
-    console.log('User is not authenticated, redirecting to login...');
-  }
+  return currentUser
+    ?  children
+    : <Navigate to="/login" />;
 
-  return currentUser ? children : <Navigate to="/login" />;
 };
 
 export default ProtectedRoute;

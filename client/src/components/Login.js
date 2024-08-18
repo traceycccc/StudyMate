@@ -140,16 +140,30 @@
 
 
 //7.1
-import React, { useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { auth, googleProvider, signInWithPopup } from '../firebase';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 
 const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  const { currentUser, setCurrentUser } = useContext(AuthContext); // Add setCurrentUser to context
+
+  useEffect(() => {
+    if (currentUser)
+    {
+      console.log("user is still here");
+      navigate("/");
+    }
+    else
+    {
+      console.log("user not here");
+    }
+  }, [navigate]);
 
   // const handleLoginWithGoogle = async () => {
   //   try {
@@ -269,6 +283,14 @@ const Login = () => {
       if (response.status === 200) {
         // Login successful, redirect to home page
         console.log('Login successful. Redirecting to home page.');
+        let user =
+        {
+          uid: response.data.user.uid,
+          email: response.data.user.email,
+          displayName: response.data.user.name
+        } ;
+        console.log(response);
+        setCurrentUser(user); 
         navigate('/');
       } else {
         console.log('Login failed with status:', response.status);

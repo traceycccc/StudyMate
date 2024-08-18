@@ -204,26 +204,72 @@
 // export default Home;
 
 //ver 1,4
-import React from 'react';
-import { Link } from 'react-router-dom';
-import './Home.css'; // If you want to style your homepage
+// import React from 'react';
+// import { Link } from 'react-router-dom';
+// import './Home.css'; // If you want to style your homepage
+
+// const Home = () => {
+//   console.log("home")
+//   return (
+//     <div>
+//       <nav>
+//         <ul>
+//           <li>
+//             <Link to="/profile">Profile</Link>
+//           </li>
+//         </ul>
+//       </nav>
+//       <div className="content">
+//         <h1>Welcome</h1>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default Home;
+
+
+//9.6
+// src/components/Home.js
+import React, { useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
+import {Link, useNavigate } from 'react-router-dom';
+import { auth } from '../firebase'; // Import Firebase auth
 
 const Home = () => {
+  const { currentUser, setCurrentUser } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const handleLogout = async () => {
+    try {
+      await auth.signOut(); // Sign out from Firebase
+      setCurrentUser(null);
+      console.log(currentUser);
+      //localStorage.removeItem('authToken'); // Clear local token
+      navigate('/login'); // Redirect to login page
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
   return (
     <div>
       <nav>
         <ul>
-          <li>
-            <Link to="/profile">Profile</Link>
-          </li>
+          <li><Link to="/">Home</Link></li>
+          {currentUser && (
+            <>
+              <li> <Link to="/profile">Profile</Link></li>
+              <li><button onClick={handleLogout}>Logout</button></li>
+            </>
+          )}
         </ul>
       </nav>
-      <div className="content">
-        <h1>Welcome</h1>
-      </div>
+      <h1>Welcome to the Home Page</h1>
+      {/* Other content */}
     </div>
   );
 };
 
 export default Home;
+
 
