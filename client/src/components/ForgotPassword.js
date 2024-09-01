@@ -108,7 +108,7 @@ const ForgotPassword = () => {
     clearMessages();
 
     try {
-      const response = await axios.post('http://localhost:5000/api/forgotPassword', { email });
+      const response = await axios.post('http://localhost:5000/api/users/forgotPassword', { email });
       setSuccessMessage(response.data.message);
       setStep(2); // Move to OTP entry step
     } catch (error) {
@@ -121,7 +121,7 @@ const ForgotPassword = () => {
     clearMessages();
 
     try {
-      const response = await axios.post('http://localhost:5000/api/verifyForgotPasswordOTP', { email, otp });
+      const response = await axios.post('http://localhost:5000/api/users/verifyForgotPasswordOTP', { email, otp });
       setSuccessMessage(response.data.message);
       setUid(response.data.uid); // Store UID for the password reset step
       setStep(3); // Move to password reset step
@@ -141,7 +141,7 @@ const ForgotPassword = () => {
     }
 
     try {
-      const response = await axios.post('http://localhost:5000/api/resetPassword', { uid, newPassword });
+      const response = await axios.post('http://localhost:5000/api/users/resetPassword', { uid, newPassword });
       setSuccessMessage(response.data.message);
       setStep(4); // Password reset successful, show success message
     } catch (error) {

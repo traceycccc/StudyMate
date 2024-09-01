@@ -163,70 +163,9 @@ const Login = () => {
     {
       console.log("user not here");
     }
-  }, [navigate]);
+  }, [navigate, currentUser]);
 
-  // const handleLoginWithGoogle = async () => {
-  //   try {
-  //     const result = await signInWithPopup(auth, googleProvider);
-  //     const { user } = result;
-  
-  //     const userData = {
-  //       uid: user.uid,
-  //       email: user.email,
-  //       displayName: user.displayName
-  //     };
-  
-  //     const response = await axios.post('http://localhost:5000/api/loginUserGoogle', userData);
-  
-  //     if (response.status === 200) {
-  //       console.log('Full response data:', response.data); // Log the full response data
-        
-  //       const isLinked = response.data.isLinked;
-  //       console.log('isLinked:', isLinked);
-  
-  //       if (isLinked) {
-  //         navigate('/');
-  //       } else {
-  //         alert(response.data.message);
-  //         navigate('/link-account', { state: { email: user.email, uid: user.uid } });
-  //       }
-  //     } else {
-  //       alert('An error occurred during login. Please try again.');
-  //     }
-  //   } catch (error) {
-  //     console.error('Error during login:', error.response ? error.response.data : error.message);
-  //     alert('An error occurred during login. Please try again.');
-  //   }
-  // };
 
-  // const handleLoginWithGoogle = async () => {
-  //   try {
-  //     const result = await signInWithPopup(auth, googleProvider);
-  //     const { user } = result;
-  
-  //     const userData = {
-  //       uid: user.uid,
-  //       email: user.email,
-  //       displayName: user.displayName
-  //     };
-  
-  //     const response = await axios.post('http://localhost:5000/api/loginUserGoogle', userData);
-  //     console.log('Full response data:', response.data); // Log the full response data
-  
-  //     const isLinked = response.data.isLinked;
-  //     console.log('isLinked:', isLinked);
-  
-  //     if (isLinked) {
-  //       navigate('/');
-  //     } else {
-  //       alert(response.data.message);
-  //       navigate('/link-account', { state: { email: user.email, uid: user.uid } });
-  //     }
-  //   } catch (error) {
-  //     console.error('Error during login:', error.response ? error.response.data : error.message);
-  //     alert('An error occurred during login. Please try again.');
-  //   }
-  // };
 
   const handleLoginWithGoogle = async () => {
     try {
@@ -239,7 +178,7 @@ const Login = () => {
         displayName: user.displayName
       };
   
-      const response = await axios.post('http://localhost:5000/api/loginUserGoogle', userData);
+      const response = await axios.post('http://localhost:5000/api/users/loginUserGoogle', userData);
   
       if (response.status === 200) {
         console.log('Full response data:', response.data); // Log the full response data
@@ -275,7 +214,7 @@ const Login = () => {
   const handleManualLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5000/api/loginUserManual', { email, password });
+      const response = await axios.post('http://localhost:5000/api/users/loginUserManual', { email, password });
 
       // Handle successful login (e.g., save token, redirect user)
       console.log('Login response:', response.data);

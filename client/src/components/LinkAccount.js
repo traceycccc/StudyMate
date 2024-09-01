@@ -15,7 +15,7 @@ const LinkAccount = () => {
 
     try {
       // Send the email, password, and UID to the backend for verification and linking
-      const response = await axios.post('http://localhost:5000/api/linkAccount', {
+      const response = await axios.post('http://localhost:5000/api/users/linkAccount', {
         email,
         password,
         uid,

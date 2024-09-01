@@ -54,6 +54,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const userRoutes = require('./routes/userRoutes'); // Import userRoutes
+const fileRoutes = require('./routes/fileRoutes'); //import fileRoutes
 
 dotenv.config();
 
@@ -64,11 +65,13 @@ app.use(express.json());
 const PORT = process.env.PORT || 5000;
 const DB_URI = process.env.DB_URI;
 
-mongoose.connect(DB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(DB_URI)
   .then(() => console.log('MongoDB connected'))
   .catch((err) => console.error(err));
 
-app.use('/api', userRoutes); // Use userRoutes for /api
+app.use('/api/users', userRoutes); // For user-related routes
+app.use('/api/files', fileRoutes); // For file-related routes
+  
 
 app.get('/', (req, res) => {
   res.send('Hello World!');

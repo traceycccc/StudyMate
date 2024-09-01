@@ -181,7 +181,7 @@ const Register = () => {
 
       console.log('User Data:', userData);
 
-      const response = await axios.post('http://localhost:5000/api/registerUserGoogle', userData);
+      const response = await axios.post('http://localhost:5000/api/users/registerUserGoogle', userData);
 
       if (response.status === 200) {
         navigate('/login');
@@ -219,7 +219,7 @@ const Register = () => {
       };
 
       // Save user details in backend (mongodb)
-      const response = await axios.post('http://localhost:5000/api/registerUserManual', userData);
+      const response = await axios.post('http://localhost:5000/api/users/registerUserManual', userData);
 
       if (response.status === 200) {
         setShowOtpInput(true); // Show OTP input form
@@ -235,7 +235,7 @@ const Register = () => {
   const handleVerifyOTP = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5000/api/verifyOTP', { email: manualUser.email, otp });
+      const response = await axios.post('http://localhost:5000/api/users/verifyOTP', { email: manualUser.email, otp });
       if (response.status === 200) {
         navigate('/login');
       } else {
