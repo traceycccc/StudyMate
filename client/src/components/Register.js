@@ -247,9 +247,6 @@ const Register = () => {
     }
   };
 
-  // const generateUID = () => {
-  //   return 'uid-' + Math.random().toString(36).substr(2, 16);
-  // };
 
   return (
     <div>

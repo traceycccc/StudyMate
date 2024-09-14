@@ -259,7 +259,9 @@ const Home = () => {
           {currentUser && (
             <>
               <li> <Link to="/profile">Profile</Link></li>
-              <li> <Link to="/upload-component">Upload document</Link></li>
+              {/*<li> <Link to="/upload-component">Upload document</Link></li>*/}
+              <li><Link to="/upload">Upload document</Link></li>
+
               <li><button onClick={handleLogout}>Logout</button></li>
             </>
           )}

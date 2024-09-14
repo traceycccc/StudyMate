@@ -212,7 +212,7 @@ import LinkAccount from './components/LinkAccount';
 import Register from './components/Register'; // Import Register component
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
-import UploadComponent from './components/UploadComponent';
+import Upload from './components/Upload';
 
 function App() {
   return (
@@ -235,9 +235,9 @@ function App() {
                   <Profile />
                 </ProtectedRoute>
               } />
-              <Route path="/upload-component" element={
+              <Route path="/upload" element={
                 <ProtectedRoute>
-                  <UploadComponent />
+                  <Upload />
                 </ProtectedRoute>
               } />
             </Routes>
