@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const admin = require('firebase-admin');
 const dotenv = require('dotenv');
+// Initialize Firebase Admin SDK
+const serviceAccount = require('../firebase-service-account.json');
 
 
 dotenv.config(); // Load environment variables from .env file
@@ -15,8 +17,7 @@ app.use(express.json());
 const apiRoutes = require('./routes');
 app.use(apiRoutes);
 
-// Initialize Firebase Admin SDK
-const serviceAccount = require('../firebase-service-account.json');
+
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
