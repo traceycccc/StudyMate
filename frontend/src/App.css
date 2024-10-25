@@ -79,3 +79,13 @@
 }
 
 /*end of link account pop up========================*/
+
+
+/* Add this rule to your global stylesheet */
+.ProseMirror:focus {
+  outline: none;
+  border: none;
+  /* This will remove any unwanted border */
+}
+
+

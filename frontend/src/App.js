@@ -424,100 +424,963 @@
 
 
 
-import React, { useEffect, useState } from 'react';
+// import React, { useEffect, useState } from 'react';
+// import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+// import { auth } from './firebase';
+// import { onAuthStateChanged } from 'firebase/auth';
+// import Register from './screens/Register';
+// import Login from './screens/Login';
+// import ForgotPassword from './screens/ForgotPassword';
+// import Dashboard from './screens/Dashboard';
+
+// const App = () => {
+//   const [user, setUser] = useState(null);
+//   const [loading, setLoading] = useState(true); // State for loading status
+//   const [emailVerified, setEmailVerified] = useState(false); // State to check email verification
+//   const [polling, setPolling] = useState(false); // State to manage polling for email verification
+
+//   useEffect(() => {
+//     // Listen for authentication state changes
+//     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+//       setUser(currentUser);
+//       setLoading(false); // Stop loading once we know the user's state
+
+//       if (currentUser) {
+//         if (currentUser.emailVerified) {
+//           setEmailVerified(true);
+//         } else {
+//           setEmailVerified(false);
+//           startPollingVerification(currentUser); // Start polling for email verification
+//         }
+//       }
+//     });
+
+//     // Clean up the listener on unmount
+//     return () => unsubscribe();
+//   }, []);
+
+//   const startPollingVerification = (currentUser) => {
+//     if (!polling) {
+//       setPolling(true);
+//       const interval = setInterval(async () => {
+//         await currentUser.reload(); // Reload the user to update the emailVerified status
+//         if (currentUser.emailVerified) {
+//           setEmailVerified(true); // If verified, update the state
+//           clearInterval(interval); // Stop polling once verified
+//           setPolling(false); // Reset polling state
+//         }
+//       }, 3000); // Check every 3 seconds
+//     }
+//   };
+
+//   if (loading) {
+//     return <div>Loading...</div>; // Show a loading indicator until the user state is known
+//   }
+
+//   return (
+//     <Router>
+//       <Routes>
+//         {/* Public Routes */}
+//         <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
+//         <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <Register />} />
+//         <Route path="/forgot-password" element={<ForgotPassword />} />
+
+//         {/* Protected Route */}
+//         <Route
+//           path="/dashboard"
+//           element={
+//             user && emailVerified ? (
+//               <Dashboard />
+//             ) : user && !emailVerified ? (
+//               <div>
+//                 <h2>Please verify your email before accessing the dashboard.</h2>
+//                 <p>Check your email and click the verification link to proceed.</p>
+//                 <button onClick={() => auth.currentUser.sendEmailVerification()}>Resend Verification Email</button>
+//                 <button onClick={() => auth.signOut()}>Log Out</button>
+//               </div>
+//             ) : (
+//               <Navigate to="/login" />
+//             )
+//           }
+//         />
+
+//         {/* Default Route */}
+//         <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} />
+//       </Routes>
+//     </Router>
+//   );
+// };
+
+// export default App;
+
+
+
+
+
+// ////fixed the startPollingVerificaton
+// import React, { useCallback, useEffect, useState } from 'react';
+// import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+// import { auth } from './firebase';
+// import { onAuthStateChanged } from 'firebase/auth';
+// import Register from './screens/Register';
+// import Login from './screens/Login';
+// import ForgotPassword from './screens/ForgotPassword';
+// import Dashboard from './screens/Dashboard';
+
+// const App = () => {
+//   const [user, setUser] = useState(null);
+//   const [loading, setLoading] = useState(true); // State for loading status
+//   const [emailVerified, setEmailVerified] = useState(false); // State to check email verification
+//   const [polling, setPolling] = useState(false); // State to manage polling for email verification
+
+//   // Memoized startPollingVerification function
+//   const startPollingVerification = useCallback((currentUser) => {
+//     if (!polling) {
+//       setPolling(true);
+//       const interval = setInterval(async () => {
+//         await currentUser.reload(); // Reload the user to update emailVerified status
+//         if (currentUser.emailVerified) {
+//           setEmailVerified(true); // Update the state
+//           clearInterval(interval); // Stop polling
+//           setPolling(false); // Reset polling state
+//         }
+//       }, 3000); // Poll every 3 seconds
+//     }
+//   }, [polling]); // Dependency array for polling
+
+//   useEffect(() => {
+//     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+//       setUser(currentUser);
+//       setLoading(false);
+
+//       if (currentUser) {
+//         if (currentUser.emailVerified) {
+//           setEmailVerified(true);
+//         } else {
+//           setEmailVerified(false);
+//           startPollingVerification(currentUser); // Call the memoized function
+//         }
+//       }
+//     });
+
+//     return () => unsubscribe(); // Cleanup on unmount
+//   }, [startPollingVerification]); // Add startPollingVerification as a dependency
+
+//   if (loading) {
+//     return <div>Loading...</div>; // Show a loading indicator until the user state is known
+//   }
+
+//   return (
+//     <Router>
+//       <Routes>
+//         {/* Public Routes */}
+//         <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
+//         <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <Register />} />
+//         <Route path="/forgot-password" element={<ForgotPassword />} />
+
+//         {/* Protected Route */}
+//         <Route
+//           path="/dashboard"
+//           element={
+//             user && emailVerified ? (
+//               <Dashboard />
+//             ) : user && !emailVerified ? (
+//               <div>
+//                 <h2>Please verify your email before accessing the dashboard.</h2>
+//                 <p>Check your email and click the verification link to proceed.</p>
+//                 <button onClick={() => auth.currentUser.sendEmailVerification()}>Resend Verification Email</button>
+//                 <button onClick={() => auth.signOut()}>Log Out</button>
+//               </div>
+//             ) : (
+//               <Navigate to="/login" />
+//             )
+//           }
+//         />
+
+//         {/* Default Route */}
+//         <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} />
+//       </Routes>
+//     </Router>
+//   );
+// };
+
+// export default App;
+
+
+// // after adding mantine (fail)
+// import React, { useCallback, useEffect, useState } from 'react';
+// import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+// import { auth } from './firebase';
+// import { onAuthStateChanged } from 'firebase/auth';
+// import Register from './screens/Register';
+// import Login from './screens/Login';
+// import ForgotPassword from './screens/ForgotPassword';
+// import Dashboard from './screens/Dashboard';
+
+// // Mantine imports
+// import { MantineProvider, Loader, Container, Button, Text, Title } from '@mantine/core';
+
+// const App = () => {
+//   const [user, setUser] = useState(null);
+//   const [loading, setLoading] = useState(true);
+//   const [emailVerified, setEmailVerified] = useState(false);
+//   const [polling, setPolling] = useState(false);
+
+//   // Memoized startPollingVerification function
+//   const startPollingVerification = useCallback((currentUser) => {
+//     if (!polling) {
+//       setPolling(true);
+//       const interval = setInterval(async () => {
+//         await currentUser.reload();
+//         if (currentUser.emailVerified) {
+//           setEmailVerified(true);
+//           clearInterval(interval);
+//           setPolling(false);
+//         }
+//       }, 3000);
+//     }
+//   }, [polling]);
+
+//   useEffect(() => {
+//     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+//       setUser(currentUser);
+//       setLoading(false);
+
+//       if (currentUser) {
+//         if (currentUser.emailVerified) {
+//           setEmailVerified(true);
+//         } else {
+//           setEmailVerified(false);
+//           startPollingVerification(currentUser);
+//         }
+//       }
+//     });
+
+//     return () => unsubscribe();
+//   }, [startPollingVerification]);
+
+//   if (loading) {
+//     return (
+//       <Container mt={50}>
+//         <Loader size="lg" variant="bars" />
+//         <Text align="center" mt="md">Loading...</Text>
+//       </Container>
+//     );
+//   }
+
+//   return (
+//     <MantineProvider theme={{ colorScheme: 'light' }} withGlobalStyles withNormalizeCSS>
+//       <Router>
+//         <Routes>
+//           <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
+//           <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <Register />} />
+//           <Route path="/forgot-password" element={<ForgotPassword />} />
+
+//           <Route
+//             path="/dashboard"
+//             element={
+//               user && emailVerified ? (
+//                 <Dashboard />
+//               ) : user && !emailVerified ? (
+//                 <Container mt={50} align="center">
+//                   <Title order={2}>Please verify your email before accessing the dashboard.</Title>
+//                   <Text mt="sm">
+//                     Check your email and click the verification link to proceed.
+//                   </Text>
+//                   <Button
+//                     mt="md"
+//                     color="blue"
+//                     onClick={() => auth.currentUser.sendEmailVerification()}
+//                   >
+//                     Resend Verification Email
+//                   </Button>
+//                   <Button mt="sm" color="red" onClick={() => auth.signOut()}>
+//                     Log Out
+//                   </Button>
+//                 </Container>
+//               ) : (
+//                 <Navigate to="/login" />
+//               )
+//             }
+//           />
+
+//           <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} />
+//         </Routes>
+//       </Router>
+//     </MantineProvider>
+//   );
+// };
+
+// export default App;
+
+
+
+
+
+
+
+
+//test
+// import React from 'react';
+// import { MantineProvider, Button, Text } from '@mantine/core';
+
+// const App = () => {
+//   return (
+//     <MantineProvider theme={{ colorScheme: 'light' }} withGlobalStyles withNormalizeCSS>
+//       <div style={{ padding: '20px' }}>
+//         <Text>This is a test.</Text>
+//         <Button>Test Button</Button>
+//       </div>
+//     </MantineProvider>
+//   );
+// };
+
+// export default App;
+
+
+// import React, { useCallback, useEffect, useState } from 'react';
+// import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+// import { auth } from './firebase';
+// import { onAuthStateChanged } from 'firebase/auth';
+// import Register from './screens/Register';
+// import Login from './screens/Login';
+// import ForgotPassword from './screens/ForgotPassword';
+// import Dashboard from './screens/Dashboard';
+// import { MantineProvider, createTheme } from '@mantine/core';  // Added Mantine imports
+// import PageA from './screens/PageA'; // Add PageA
+// import Modules from './screens/Modules'; 
+// import ModuleOverview from './screens/ModuleOverview'; 
+
+// const theme = createTheme({
+//   // Customize your Mantine theme here if needed
+// });
+
+// const App = () => {
+//   const [user, setUser] = useState(null);
+//   const [loading, setLoading] = useState(true);
+//   const [emailVerified, setEmailVerified] = useState(false);
+//   const [polling, setPolling] = useState(false);
+
+//   const startPollingVerification = useCallback((currentUser) => {
+//     if (!polling) {
+//       setPolling(true);
+//       const interval = setInterval(async () => {
+//         await currentUser.reload();
+//         if (currentUser.emailVerified) {
+//           setEmailVerified(true);
+//           clearInterval(interval);
+//           setPolling(false);
+//         }
+//       }, 3000);
+//     }
+//   }, [polling]);
+
+//   useEffect(() => {
+//     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+//       setUser(currentUser);
+//       setLoading(false);
+
+//       if (currentUser) {
+//         if (currentUser.emailVerified) {
+//           setEmailVerified(true);
+//         } else {
+//           setEmailVerified(false);
+//           startPollingVerification(currentUser);
+//         }
+//       }
+//     });
+
+//     return () => unsubscribe();
+//   }, [startPollingVerification]);
+
+//   if (loading) {
+//     return <div>Loading...</div>;
+//   }
+
+//   return (
+//     <MantineProvider theme={theme}>  {/* Wrap the app with MantineProvider */}
+//       <Router>
+//         <Routes>
+//           <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
+//           <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <Register />} />
+//           <Route path="/forgot-password" element={<ForgotPassword />} />
+//           <Route path="/pageA" element={user && emailVerified ? <PageA /> : <Navigate to="/login" />} />
+//           <Route path="/modules" element={user && emailVerified ? <Modules /> : <Navigate to="/login" />} />
+//           <Route path="/module-overview" element={user && emailVerified ? <ModuleOverview /> : <Navigate to="/login" />} />
+
+//           <Route
+//             path="/dashboard"
+//             element={
+//               user && emailVerified ? (
+//                 <Dashboard />
+//               ) : user && !emailVerified ? (
+//                 <div>
+//                   <h2>Please verify your email before accessing the dashboard.</h2>
+//                   <p>Check your email and click the verification link to proceed.</p>
+//                   <button onClick={() => auth.currentUser.sendEmailVerification()}>Resend Verification Email</button>
+//                   <button onClick={() => auth.signOut()}>Log Out</button>
+//                 </div>
+//               ) : (
+//                 <Navigate to="/login" />
+//               )
+//             }
+//           />
+//           <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} />
+//         </Routes>
+//       </Router>
+//     </MantineProvider>  
+//   );
+// };
+
+// export default App;
+
+
+
+
+
+
+////acn work but cuz of the going back to Modules page from ModuleOverview page, there is no nav bar
+// import React, { useCallback, useEffect, useState } from 'react';
+// import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+// import { auth } from './firebase';
+// import { onAuthStateChanged } from 'firebase/auth';
+// import Register from './screens/Register';
+// import Login from './screens/Login';
+// import ForgotPassword from './screens/ForgotPassword';
+// import Dashboard from './screens/Dashboard';
+// import { MantineProvider, createTheme } from '@mantine/core';  // Added Mantine imports
+// import PageA from './screens/PageA'; // Add PageA
+// import Modules from './screens/Modules'; 
+// import ModuleOverview from './screens/ModuleOverview'; 
+
+// const theme = createTheme({
+//   // Customize your Mantine theme here if needed
+// });
+
+// const App = () => {
+//   const [user, setUser] = useState(null);
+//   const [loading, setLoading] = useState(true);
+//   const [emailVerified, setEmailVerified] = useState(false);
+//   const [polling, setPolling] = useState(false);
+
+//   const startPollingVerification = useCallback((currentUser) => {
+//     if (!polling) {
+//       setPolling(true);
+//       const interval = setInterval(async () => {
+//         await currentUser.reload();
+//         if (currentUser.emailVerified) {
+//           setEmailVerified(true);
+//           clearInterval(interval);
+//           setPolling(false);
+//         }
+//       }, 3000);
+//     }
+//   }, [polling]);
+
+//   useEffect(() => {
+//     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+//       setUser(currentUser);
+//       setLoading(false);
+
+//       if (currentUser) {
+//         if (currentUser.emailVerified) {
+//           setEmailVerified(true);
+//         } else {
+//           setEmailVerified(false);
+//           startPollingVerification(currentUser);
+//         }
+//       }
+//     });
+
+//     return () => unsubscribe();
+//   }, [startPollingVerification]);
+
+//   if (loading) {
+//     return <div>Loading...</div>;
+//   }
+
+//   return (
+//     <MantineProvider theme={theme}>  {/* Wrap the app with MantineProvider */}
+//       <Router>
+//         <Routes>
+//           <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
+//           <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <Register />} />
+//           <Route path="/forgot-password" element={<ForgotPassword />} />
+//           <Route path="/pageA" element={user && emailVerified ? <PageA /> : <Navigate to="/login" />} />
+//           <Route path="/modules" element={user && emailVerified ? <Modules /> : <Navigate to="/login" />} />
+//           <Route path="/module-overview" element={user && emailVerified ? <ModuleOverview /> : <Navigate to="/login" />} />
+
+//           <Route
+//             path="/dashboard"
+//             element={
+//               user && emailVerified ? (
+//                 <Dashboard />
+//               ) : user && !emailVerified ? (
+//                 <div>
+//                   <h2>Please verify your email before accessing the dashboard.</h2>
+//                   <p>Check your email and click the verification link to proceed.</p>
+//                   <button onClick={() => auth.currentUser.sendEmailVerification()}>Resend Verification Email</button>
+//                   <button onClick={() => auth.signOut()}>Log Out</button>
+//                 </div>
+//               ) : (
+//                 <Navigate to="/login" />
+//               )
+//             }
+//           />
+//           <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} />
+//         </Routes>
+//       </Router>
+//     </MantineProvider>  
+//   );
+// };
+
+// export default App;
+
+
+
+// import React, { useCallback, useEffect, useState } from 'react';
+// import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+// import { auth } from './firebase';
+// import { onAuthStateChanged } from 'firebase/auth';
+// import Register from './screens/Register';
+// import Login from './screens/Login';
+// import ForgotPassword from './screens/ForgotPassword';
+// import AppLayout from './components/AppLayout'; // New Layout Component
+// import { MantineProvider, createTheme } from '@mantine/core';
+
+// const theme = createTheme({
+//   // Customize your Mantine theme here if needed
+// });
+
+// const App = () => {
+//   const [user, setUser] = useState(null);
+//   const [loading, setLoading] = useState(true);
+//   const [emailVerified, setEmailVerified] = useState(false);
+//   const [polling, setPolling] = useState(false);
+
+//   const startPollingVerification = useCallback((currentUser) => {
+//     if (!polling) {
+//       setPolling(true);
+//       const interval = setInterval(async () => {
+//         await currentUser.reload();
+//         if (currentUser.emailVerified) {
+//           setEmailVerified(true);
+//           clearInterval(interval);
+//           setPolling(false);
+//         }
+//       }, 3000);
+//     }
+//   }, [polling]);
+
+//   useEffect(() => {
+//     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+//       setUser(currentUser);
+//       setLoading(false);
+
+//       if (currentUser) {
+//         if (currentUser.emailVerified) {
+//           setEmailVerified(true);
+//         } else {
+//           setEmailVerified(false);
+//           startPollingVerification(currentUser);
+//         }
+//       }
+//     });
+
+//     return () => unsubscribe();
+//   }, [startPollingVerification]);
+
+
+  
+
+//   if (loading) {
+//     return <div>Loading...</div>;
+//   }
+
+//   return (
+//     <MantineProvider theme={theme}>
+//       <Router>
+//         <Routes>
+//           {/* Public Routes */}
+//           <Route path="/login" element={user ? <Navigate to="/home" /> : <Login />} />
+//           <Route path="/register" element={user ? <Navigate to="/home" /> : <Register />} />
+//           <Route path="/forgot-password" element={<ForgotPassword />} />
+
+//           {/* Protected Routes */}
+//           {user && (
+//             <>
+//               <Route
+//                 path="/*"
+//                 element={
+//                   emailVerified ? (
+//                     <AppLayout /> 
+//                   ) : (
+//               <div>
+//                 <h2>Please verify your email before accessing the app.</h2>
+//                 <p>Check your email and click the verification link to proceed.</p>
+//                 <button onClick={() => auth.currentUser.sendEmailVerification()}>
+//                   Resend Verification Email
+//                 </button>
+//                 <button onClick={() => auth.signOut()}>Log Out</button>
+//               </div>
+//               )
+//                 }
+//               />
+//             </>
+//           )}
+
+//           {/* Redirect to login or home based on the user's status */}
+//           <Route path="/" element={user ? <Navigate to="/home" /> : <Navigate to="/login" />} />
+//         </Routes>
+//       </Router>
+//     </MantineProvider>
+//   );
+// };
+
+// export default App;
+
+
+
+// //fixing log out issue
+// import React, { useCallback, useEffect, useState } from 'react';
+// import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+// import { auth } from './firebase';
+// import { onAuthStateChanged, signOut } from 'firebase/auth';
+// import Register from './screens/Register';
+// import Login from './screens/Login';
+// import ForgotPassword from './screens/ForgotPassword';
+// import AppLayout from './components/AppLayout'; // New Layout Component
+// import { MantineProvider, createTheme } from '@mantine/core';
+
+// const theme = createTheme({
+//   // Customize your Mantine theme here if needed
+// });
+
+// const App = () => {
+//   const [user, setUser] = useState(null);
+//   const [loading, setLoading] = useState(true);
+//   const [emailVerified, setEmailVerified] = useState(false);
+//   const [polling, setPolling] = useState(false);
+
+//   const startPollingVerification = useCallback((currentUser) => {
+//     if (!polling) {
+//       setPolling(true);
+//       const interval = setInterval(async () => {
+//         await currentUser.reload();
+//         if (currentUser.emailVerified) {
+//           setEmailVerified(true);
+//           clearInterval(interval);
+//           setPolling(false);
+//         }
+//       }, 3000);
+//     }
+//   }, [polling]);
+
+//   useEffect(() => {
+//     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+//       setUser(currentUser);
+//       setLoading(false);
+
+//       if (currentUser) {
+//         if (currentUser.emailVerified) {
+//           setEmailVerified(true);
+//         } else {
+//           setEmailVerified(false);
+//           startPollingVerification(currentUser);
+//         }
+//       }
+//     });
+
+//     return () => unsubscribe();
+//   }, [startPollingVerification]);
+
+//   // Logout function
+//   const handleLogout = () => {
+//     signOut(auth)
+//       .then(() => {
+//         setUser(null);  // Set user state to null after signing out
+//         console.log('User signed out');
+//       })
+//       .catch((error) => {
+//         console.error('Error signing out:', error);
+//       });
+//   };
+
+
+
+
+//   if (loading) {
+//     return <div>Loading...</div>;
+//   }
+
+//   return (
+//     <MantineProvider theme={theme}>
+//       <Router>
+//         <Routes>
+//           {/* Public Routes */}
+//           <Route path="/login" element={user ? <Navigate to="/home" /> : <Login />} />
+//           <Route path="/register" element={user ? <Navigate to="/home" /> : <Register />} />
+//           <Route path="/forgot-password" element={<ForgotPassword />} />
+
+//           {/* Protected Routes */}
+//           {user && (
+//             <>
+//               <Route
+//                 path="/*"
+//                 element={
+//                   emailVerified ? (
+//                     <AppLayout onLogout={handleLogout} />
+//                   ) : (
+//                     <div>
+//                       <h2>Please verify your email before accessing the app.</h2>
+//                       <p>Check your email and click the verification link to proceed.</p>
+//                       <button onClick={() => auth.currentUser.sendEmailVerification()}>
+//                         Resend Verification Email
+//                       </button>
+//                         <button onClick={handleLogout}>Log Out</button>
+//                     </div>
+//                   )
+//                 }
+//               />
+//             </>
+//           )}
+
+//           {/* Redirect to login or home based on the user's status */}
+//           <Route path="/" element={user ? <Navigate to="/home" /> : <Navigate to="/login" />} />
+//         </Routes>
+//       </Router>
+//     </MantineProvider>
+//   );
+// };
+
+// export default App;
+
+
+
+
+//fixing log out issue
+//part 2
+//fixed
+// import React, { useCallback, useEffect, useState } from 'react';
+// import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+// import { auth } from './firebase';
+// import { onAuthStateChanged } from 'firebase/auth';
+// import Register from './screens/Register';
+// import Login from './screens/Login';
+// import ForgotPassword from './screens/ForgotPassword';
+// import AppLayout from './components/AppLayout'; // New Layout Component
+// import { MantineProvider, createTheme } from '@mantine/core';
+
+// const lightTheme = createTheme({
+//   // Customize your Mantine theme here if needed
+//   colorScheme: 'light',
+// });
+
+// const App = () => {
+//   const [user, setUser] = useState(null);
+//   const [loading, setLoading] = useState(true);
+//   const [emailVerified, setEmailVerified] = useState(false);
+//   const [polling, setPolling] = useState(false);
+
+//   const startPollingVerification = useCallback((currentUser) => {
+//     if (!polling) {
+//       setPolling(true);
+//       const interval = setInterval(async () => {
+//         await currentUser.reload();
+//         if (currentUser.emailVerified) {
+//           setEmailVerified(true);
+//           clearInterval(interval);
+//           setPolling(false);
+//         }
+//       }, 3000);
+//     }
+//   }, [polling]);
+
+//   useEffect(() => {
+//     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+//       setUser(currentUser);
+//       setLoading(false);
+
+//       if (currentUser) {
+//         if (currentUser.emailVerified) {
+//           setEmailVerified(true);
+//         } else {
+//           setEmailVerified(false);
+//           startPollingVerification(currentUser);
+//         }
+//       }
+//     });
+
+//     return () => unsubscribe();
+//   }, [startPollingVerification]);
+
+  
+
+
+//   if (loading) {
+//     return <div>Loading...</div>;
+//   }
+
+//   return (
+//     <MantineProvider theme={lightTheme}>
+//       <Router>
+//         <Routes>
+//           {/* Public Routes */}
+//           <Route path="/login" element={user ? <Navigate to="/home" /> : <Login />} />
+//           <Route path="/register" element={user ? <Navigate to="/home" /> : <Register />} />
+//           <Route path="/forgot-password" element={<ForgotPassword />} />
+
+//           {/* Protected Routes */}
+//           {user && (
+//             <>
+//               <Route
+//                 path="/*"
+//                 element={
+//                   emailVerified ? (
+//                     <AppLayout />
+//                   ) : (
+//                     <div>
+//                       <h2>Please verify your email before accessing the app.</h2>
+//                       <p>Check your email and click the verification link to proceed.</p>
+//                       <button onClick={() => auth.currentUser.sendEmailVerification()}>
+//                         Resend Verification Email
+//                       </button>
+//                         <button onClick={() => auth.signOut()}>Log Out</button>
+//                     </div>
+//                   )
+//                 }
+//               />
+//             </>
+//           )}
+
+//           {/* Redirect to login or home based on the user's status */}
+//           <Route path="/" element={user ? <Navigate to="/home" /> : <Navigate to="/login" />} />
+//         </Routes>
+//       </Router>
+//     </MantineProvider>
+//   );
+// };
+
+// export default App;
+
+
+
+
+
+import React, { useCallback, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { auth } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import Register from './components/Register';
-import Login from './components/Login';
-import ForgotPassword from './components/ForgotPassword';
-import Dashboard from './components/Dashboard';
+import Register from './screens/Register';
+import Login from './screens/Login';
+import ForgotPassword from './screens/ForgotPassword';
+import AppLayout from './components/AppLayout'; // New Layout Component
+import { MantineProvider, createTheme } from '@mantine/core';
+
+
 
 const App = () => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // State for loading status
-  const [emailVerified, setEmailVerified] = useState(false); // State to check email verification
-  const [polling, setPolling] = useState(false); // State to manage polling for email verification
+  const [loading, setLoading] = useState(true);
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [polling, setPolling] = useState(false);
+  const [theme, setTheme] = useState('light'); // Move theme state to App.js
+
+  const startPollingVerification = useCallback((currentUser) => {
+    if (!polling) {
+      setPolling(true);
+      const interval = setInterval(async () => {
+        await currentUser.reload();
+        if (currentUser.emailVerified) {
+          setEmailVerified(true);
+          clearInterval(interval);
+          setPolling(false);
+        }
+      }, 3000);
+    }
+  }, [polling]);
 
   useEffect(() => {
-    // Listen for authentication state changes
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      setLoading(false); // Stop loading once we know the user's state
+      setLoading(false);
 
       if (currentUser) {
         if (currentUser.emailVerified) {
           setEmailVerified(true);
         } else {
           setEmailVerified(false);
-          startPollingVerification(currentUser); // Start polling for email verification
+          startPollingVerification(currentUser);
         }
       }
     });
 
-    // Clean up the listener on unmount
     return () => unsubscribe();
-  }, []);
+  }, [startPollingVerification]);
 
-  const startPollingVerification = (currentUser) => {
-    if (!polling) {
-      setPolling(true);
-      const interval = setInterval(async () => {
-        await currentUser.reload(); // Reload the user to update the emailVerified status
-        if (currentUser.emailVerified) {
-          setEmailVerified(true); // If verified, update the state
-          clearInterval(interval); // Stop polling once verified
-          setPolling(false); // Reset polling state
-        }
-      }, 3000); // Check every 3 seconds
-    }
+  const getTheme = () => {
+    return createTheme({
+      colorScheme: theme,  // This will dynamically apply light or dark theme
+      colors: {
+        dark: ['#C1C2C5', '#A6A7AB', '#909296', '#5C5F66', '#373A40', '#2C2E33', '#25262B', '#1A1B1E', '#141517', '#101113'],
+        light: ['#F8F9FA', '#E9ECEF', '#DEE2E6', '#CED4DA', '#ADB5BD', '#6C757D', '#495057', '#343A40', '#212529', '#121314'],
+      },
+      primaryColor: 'blue',
+      fontFamily: 'Arial, sans-serif',
+      headings: {
+        fontFamily: 'Arial, sans-serif',
+        fontWeight: 700,
+      },
+    });
   };
 
+
+
   if (loading) {
-    return <div>Loading...</div>; // Show a loading indicator until the user state is known
+    return <div>Loading...</div>;
   }
 
   return (
-    <Router>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
-        <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <Register />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
+    <MantineProvider theme={getTheme()} withGlobalStyles withNormalizeCSS>
+      <Router>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/login" element={user ? <Navigate to="/home" /> : <Login />} />
+          <Route path="/register" element={user ? <Navigate to="/home" /> : <Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
 
-        {/* Protected Route */}
-        <Route
-          path="/dashboard"
-          element={
-            user && emailVerified ? (
-              <Dashboard />
-            ) : user && !emailVerified ? (
-              <div>
-                <h2>Please verify your email before accessing the dashboard.</h2>
-                <p>Check your email and click the verification link to proceed.</p>
-                <button onClick={() => auth.currentUser.sendEmailVerification()}>Resend Verification Email</button>
-                <button onClick={() => auth.signOut()}>Log Out</button>
-              </div>
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
-        />
+          {/* Protected Routes */}
+          {user && (
+            <>
+              <Route
+                path="/*"
+                element={
+                  emailVerified ? (
+                    <AppLayout theme={theme} setTheme={setTheme} />
+                  ) : (
+                    <div>
+                      <h2>Please verify your email before accessing the app.</h2>
+                      <p>Check your email and click the verification link to proceed.</p>
+                      <button onClick={() => auth.currentUser.sendEmailVerification()}>
+                        Resend Verification Email
+                      </button>
+                      <button onClick={() => auth.signOut()}>Log Out</button>
+                    </div>
+                  )
+                }
+              />
+            </>
+          )}
 
-        {/* Default Route */}
-        <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} />
-      </Routes>
-    </Router>
+          {/* Redirect to login or home based on the user's status */}
+          <Route path="/" element={user ? <Navigate to="/home" /> : <Navigate to="/login" />} />
+        </Routes>
+      </Router>
+    </MantineProvider>
   );
 };
 
 export default App;
-
-
-
-
-
-
 
 
 

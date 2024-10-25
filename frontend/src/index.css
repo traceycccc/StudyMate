@@ -1,13 +1,4 @@
 
-/*injects Tailwind's base styles, which include resets and default styles for HTML elements.*/
-@tailwind base;  
-
-/*designed to be extended or overridden by your custom styles.*/
-@tailwind components;
-
-/*utility classes,
-which are single-purpose classes that can be used directly in your HTML to style elements.*/
-@tailwind utilities;
 
 body {
   margin: 0;

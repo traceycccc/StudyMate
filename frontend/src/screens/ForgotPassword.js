@@ -140,12 +140,71 @@
 
 
 
+// import React, { useState } from 'react';
+// import { sendPasswordResetEmail } from 'firebase/auth';
+// import { auth } from '../firebase';
+// import InputField from './components/InputField';
+// import Button from './components/Button';
+// import FormContainer from './components/FormContainer';
+
+// const ForgotPassword = () => {
+//     const [email, setEmail] = useState('');
+//     const [error, setError] = useState('');
+//     const [successMessage, setSuccessMessage] = useState('');
+
+//     const handleEmailSubmit = async (e) => {
+//         e.preventDefault();
+//         setError(''); // Clear previous error
+//         setSuccessMessage(''); // Clear success message
+
+//         // Define actionCodeSettings to redirect after password reset
+//         const actionCodeSettings = {
+//             url: 'http://localhost:3000/login', // This will be the login page
+//             handleCodeInApp: false, // False means Firebase will handle the reset link in the web browser
+//         };
+
+//         try {
+//             // Attempt to send password reset email with redirection
+//             await sendPasswordResetEmail(auth, email, actionCodeSettings);
+//             setSuccessMessage(`Password reset email sent to ${email}. Please check your inbox.`);
+//         } catch (error) {
+//             if (error.code === 'auth/user-not-found') {
+//                 setError('No account exists for this email.');
+//             } else {
+//                 setError('Error sending password reset email: ' + error.message);
+//             }
+//         }
+//     };
+
+//     return (
+//         <FormContainer>
+//             <h2 className="text-2xl font-bold text-center mb-6">Reset Password</h2>
+//             <form onSubmit={handleEmailSubmit}>
+//                 <InputField
+//                     label="Email"
+//                     type="email"
+//                     placeholder="Enter your email"
+//                     value={email}
+//                     onChange={(e) => setEmail(e.target.value)}
+//                 />
+//                 <Button text="Submit" type="submit" />
+//             </form>
+
+//             {error && <p className="text-red-500 text-xs italic mt-4">{error}</p>}
+//             {successMessage && <p className="text-green-500 text-xs italic mt-4">{successMessage}</p>}
+//         </FormContainer>
+//     );
+// };
+
+// export default ForgotPassword;
+
+
+
+
 import React, { useState } from 'react';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../firebase';
-import InputField from './InputField';
-import Button from './Button';
-import FormContainer from './FormContainer';
+import { TextInput, Button, Container, Text } from '@mantine/core';
 
 const ForgotPassword = () => {
     const [email, setEmail] = useState('');
@@ -177,22 +236,26 @@ const ForgotPassword = () => {
     };
 
     return (
-        <FormContainer>
-            <h2 className="text-2xl font-bold text-center mb-6">Reset Password</h2>
+        <Container size="xs" mt={50}>
+            <h2 style={{ textAlign: 'center', fontSize: '24px', fontWeight: 'bold', marginBottom: '20px' }}>Reset Password</h2>
             <form onSubmit={handleEmailSubmit}>
-                <InputField
+                <TextInput
                     label="Email"
                     type="email"
                     placeholder="Enter your email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    required
+                    mt="sm"
                 />
-                <Button text="Submit" type="submit" />
+                <Button type="submit" fullWidth mt="md" color="blue">
+                    Submit
+                </Button>
             </form>
 
-            {error && <p className="text-red-500 text-xs italic mt-4">{error}</p>}
-            {successMessage && <p className="text-green-500 text-xs italic mt-4">{successMessage}</p>}
-        </FormContainer>
+            {error && <Text color="red" size="sm" mt="md" align="center">{error}</Text>}
+            {successMessage && <Text color="green" size="sm" mt="md" align="center">{successMessage}</Text>}
+        </Container>
     );
 };
 
