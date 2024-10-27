@@ -2,7 +2,10 @@
   "name": "studymate",
   "version": "1.0.0",
   "scripts": {
-    "start": "concurrently \"npm run dev --prefix backend\" \"npm start --prefix frontend\""
+    "start": "concurrently \"npm run backend\" \"npm run frontend\" \"npm run python-server\"",
+    "backend": "cd backend && cd src && node index.js",
+    "frontend": "cd frontend && npm start",
+    "python-server": "cd backend && cd src && python extract_text.py"
   },
   "devDependencies": {
     "concurrently": "^9.0.1"

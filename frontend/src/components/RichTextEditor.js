@@ -2411,7 +2411,272 @@
 
 
 
+// //fix the manual save for the result into automatically
+// import '../App.css';
+// import React, { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
+// import { useEditor, EditorContent } from '@tiptap/react';
+// import StarterKit from '@tiptap/starter-kit';
+// import { Button, Group } from '@mantine/core';
+// import { IconBold, IconItalic, IconH1 } from '@tabler/icons-react';
+// import ImageResize from 'tiptap-extension-resize-image';// Import the custom image extension
+// import { uploadImageToFirebase, deleteImageFromFirebase } from '../utils/uploadImage';
+// import Youtube from '@tiptap/extension-youtube';
+// import GlobalDragHandle from 'tiptap-extension-global-drag-handle';
+// import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';  // Code block extension
+// import 'highlight.js/styles/atom-one-dark.css';  // Dark theme example
+
+
+
+// import { firestore } from '../firebase';
+// import { doc, setDoc, getDoc } from 'firebase/firestore';
+
+
+// import { all, createLowlight } from 'lowlight';  // Lowlight core for syntax highlighting
+
+// // Create a lowlight instance
+// const lowlight = createLowlight(all);
+
+
+// const RichTextEditor = forwardRef(({ noteId }, ref) => {
+
+//     const [imageUrls, setImageUrls] = useState([]);  // Track image URLs
+//     const editor = useEditor({
+//         extensions: [
+//             StarterKit,
+//             GlobalDragHandle.configure({
+//                 dragHandleWidth: 20, // default
+
+//                 // The scrollTreshold specifies how close the user must drag an element to the edge of the lower/upper screen for automatic 
+//                 // scrolling to take place. For example, scrollTreshold = 100 means that scrolling starts automatically when the user drags an 
+//                 // element to a position that is max. 99px away from the edge of the screen
+//                 // You can set this to 0 to prevent auto scrolling caused by this extension
+//                 scrollTreshold: 100, // default
+
+//                 // The css selector to query for the drag handle. (eg: '.custom-handle').
+//                 // If handle element is found, that element will be used as drag handle. 
+//                 // If not, a default handle will be created
+//                 dragHandleSelector: ".custom-drag-handle", // default is undefined
+
+
+//                 // Tags to be excluded for drag handle
+//                 // If you want to hide the global drag handle for specific HTML tags, you can use this option.
+//                 // For example, setting this option to ['p', 'hr'] will hide the global drag handle for <p> and <hr> tags.
+//                 excludedTags: [], // default
+//             }),
+//             ImageResize,  // Use the custom image extension
+//             Youtube.configure({
+//                 inline: true,
+//                 width: 640,
+//                 height: 480,
+//                 allowFullscreen: true,
+//             }),
+//             CodeBlockLowlight.configure({
+//                 lowlight,  // Configure with lowlight
+//             }),
+
+//         ],
+//         content: '<p>Loading...</p>',
+//         editorProps: {
+//             handlePaste(view, event) {
+//                 const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+
+//                 for (const item of items) {
+//                     if (item.type.indexOf('image') !== -1) {
+//                         const file = item.getAsFile();
+//                         // Upload the image to Firebase
+//                         uploadImageToFirebase(file).then((url) => {
+//                             editor.chain().focus().setImage({ src: url }).run();
+//                         });
+//                         return true;
+//                     }
+//                 }
+//                 return false;
+//             },
+//             handleDrop(view, event, slice, moved) {
+//                 const files = event.dataTransfer.files;
+//                 if (files && files[0]) {
+//                     const file = files[0];
+//                     // Upload the image to Firebase
+//                     uploadImageToFirebase(file).then((url) => {
+//                         editor.chain().focus().setImage({ src: url }).run();
+//                     });
+//                     return true;
+//                 }
+//                 return false;
+//             },
+//         },
+//         onUpdate: ({ editor }) => {
+//             const json = editor.getJSON();
+
+//             // Check if any image has been removed by comparing current images with stored URLs
+//             const currentImages = [];
+//             json.content.forEach((node) => {
+//                 if (node.type === 'image') {
+//                     currentImages.push(node.attrs.src);  // Keep track of current image URLs
+//                 }
+//             });
+
+//             // Find and delete images that were removed
+//             const deletedImages = imageUrls.filter((url) => !currentImages.includes(url));
+//             deletedImages.forEach((url) => {
+//                 deleteImageFromFirebase(url);  // Remove from Firebase
+//             });
+
+//             // Update the tracked image URLs
+//             setImageUrls(currentImages);
+
+//             // Autosave the content (left untouched)
+//             autosaveContent(noteId, json);
+//         },
+//     });
+
+//     useEffect(() => {
+//         const fetchContent = async () => {
+//             if (!noteId) return;
+
+//             try {
+//                 const docRef = doc(firestore, 'notes', noteId);
+//                 const docSnapshot = await getDoc(docRef);
+
+//                 if (docSnapshot.exists() && editor) {
+//                     const noteData = docSnapshot.data();
+//                     editor.commands.setContent(noteData.content, false);
+//                 }
+//             } catch (error) {
+//                 console.error('Error fetching note content:', error);
+//             }
+//         };
+
+//         fetchContent();
+//     }, [noteId, editor]);
+
+//     const autosaveContent = async (noteId, content) => {
+//         if (!noteId) return;
+
+//         try {
+//             await setDoc(doc(firestore, 'notes', noteId), { content }, { merge: true });
+//             console.log('Note content autosaved.');
+//         } catch (error) {
+//             console.error('Error saving note content:', error);
+//         }
+//     };
+//     // useImperativeHandle(ref, () => ({
+//     //     insertText(text) {
+//     //         if (editor) {
+//     //             editor.commands.setContent(editor.getHTML() + `<p>${text}</p>`); // Insert text as a new paragraph
+//     //         }
+//     //     }
+//     // }));
+
+//     useImperativeHandle(ref, () => ({
+//         insertText(text) {
+//             if (editor) {
+//                 editor.commands.insertContent(`<p>${text}</p>`); // Insert text as a new paragraph
+//             }
+//         },
+//     }));
+
+
+
+
+//     if (!editor) {
+//         return null;
+//     }
+
+
+//     const addYouTubeVideo = () => {
+//         const url = prompt('Enter YouTube URL')
+
+//         if (url) {
+//             editor.commands.setYoutubeVideo({
+//                 src: url,
+//             })
+//         }
+//     }
+
+
+//     return (
+//         <div style={{ border: '1px solid #d1d1d1', borderRadius: '8px', padding: '10px' }}>
+//             <Group spacing="xs" position="left" mb="md" style={{ borderBottom: '1px solid #e0e0e0', paddingBottom: '10px' }}>
+//                 <Button
+//                     variant={editor.isActive('bold') ? 'filled' : 'outline'}
+//                     leftIcon={<IconBold size={14} />}
+//                     onClick={() => editor.chain().focus().toggleBold().run()}
+//                     style={{ borderRadius: '4px', padding: '5px 10px', fontSize: '14px' }}
+//                 >
+//                     Bold
+//                 </Button>
+//                 <Button
+//                     variant={editor.isActive('italic') ? 'filled' : 'outline'}
+//                     leftIcon={<IconItalic size={14} />}
+//                     onClick={() => editor.chain().focus().toggleItalic().run()}
+//                     style={{ borderRadius: '4px', padding: '5px 10px', fontSize: '14px' }}
+//                 >
+//                     Italic
+//                 </Button>
+//                 <Button
+//                     variant={editor.isActive('heading', { level: 1 }) ? 'filled' : 'outline'}
+//                     leftIcon={<IconH1 size={14} />}
+//                     onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+//                     style={{ borderRadius: '4px', padding: '5px 10px', fontSize: '14px' }}
+//                 >
+//                     H1
+//                 </Button>
+
+//                 <Button
+//                     onClick={() => {
+//                         const url = prompt('Enter image URL');
+//                         if (url) {
+//                             editor.chain().focus().setImage({ src: url }).run();
+//                         }
+//                     }}
+//                 >
+//                     Insert Image
+//                 </Button>
+
+//                 {/* Add a button to embed YouTube videos */}
+//                 <Button onClick={addYouTubeVideo}>Embed YouTube Video</Button>
+
+
+//                 <button
+//                     onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+//                     className={editor.isActive('codeBlock') ? 'is-active' : ''}
+//                 >
+//                     Toggle code block
+//                 </button>
+//                 <button
+//                     onClick={() => editor.chain().focus().setCodeBlock().run()}
+//                     disabled={editor.isActive('codeBlock')}
+//                 >
+//                     Set code block
+//                 </button>
+//             </Group>
+
+//             <EditorContent
+//                 editor={editor}
+//                 style={{
+//                     border: '1px solid #e0e0e0',
+//                     padding: '10px',
+//                     minHeight: '200px',
+//                     borderRadius: '4px',
+//                     backgroundColor: '#fff',
+//                     fontFamily: 'Arial, sans-serif',
+//                     fontSize: '16px',
+//                     lineHeight: '1.5',
+//                     outline: 'none',
+//                     boxShadow: 'none',
+//                 }}
+//             />
+//         </div>
+//     );
+// });
+
+// export default RichTextEditor;
+
+
+
 //fix the manual save for the result into automatically
+//simply taking out comments
 import '../App.css';
 import React, { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
@@ -2445,22 +2710,8 @@ const RichTextEditor = forwardRef(({ noteId }, ref) => {
             StarterKit,
             GlobalDragHandle.configure({
                 dragHandleWidth: 20, // default
-
-                // The scrollTreshold specifies how close the user must drag an element to the edge of the lower/upper screen for automatic 
-                // scrolling to take place. For example, scrollTreshold = 100 means that scrolling starts automatically when the user drags an 
-                // element to a position that is max. 99px away from the edge of the screen
-                // You can set this to 0 to prevent auto scrolling caused by this extension
                 scrollTreshold: 100, // default
-
-                // The css selector to query for the drag handle. (eg: '.custom-handle').
-                // If handle element is found, that element will be used as drag handle. 
-                // If not, a default handle will be created
                 dragHandleSelector: ".custom-drag-handle", // default is undefined
-
-
-                // Tags to be excluded for drag handle
-                // If you want to hide the global drag handle for specific HTML tags, you can use this option.
-                // For example, setting this option to ['p', 'hr'] will hide the global drag handle for <p> and <hr> tags.
                 excludedTags: [], // default
             }),
             ImageResize,  // Use the custom image extension
@@ -2560,13 +2811,7 @@ const RichTextEditor = forwardRef(({ noteId }, ref) => {
             console.error('Error saving note content:', error);
         }
     };
-    // useImperativeHandle(ref, () => ({
-    //     insertText(text) {
-    //         if (editor) {
-    //             editor.commands.setContent(editor.getHTML() + `<p>${text}</p>`); // Insert text as a new paragraph
-    //         }
-    //     }
-    // }));
+ 
 
     useImperativeHandle(ref, () => ({
         insertText(text) {

@@ -259,6 +259,95 @@
 
 
 
+// import React from 'react';
+// import { ActionIcon, Menu } from '@mantine/core';
+// import { IconDots, IconFile, IconCode, IconFileTypePdf } from '@tabler/icons-react';
+// import { useNavigate } from 'react-router-dom';
+
+
+// const NoteItem = ({ note, onEdit, onDelete }) => {
+//     const navigate = useNavigate();
+
+//     // Determine which icon to show based on the note type
+//     const getNoteIcon = (type) => {
+//         switch (type) {
+//             case 'plain':
+//                 return <IconFile />;
+//             case 'code':
+//                 return <IconCode />;
+//             case 'document':
+//                 return <IconFileTypePdf />;
+//             default:
+//                 return <IconFile />;
+//         }
+//     };
+
+//     const handleNoteClick = () => {
+//         if (note.type === 'plain') {
+//             navigate(`/modules/${note.moduleId}/notes/${note.id}`);
+//         } else if (note.type === 'code') {
+//             navigate(`/modules/${note.moduleId}/code-notes/${note.id}`);
+//         } else if (note.type === 'document') {
+//             navigate(`/modules/${note.moduleId}/notes/${note.id}`);
+//         }
+//     };
+
+
+//     return (
+//         <div
+//             style={{
+//                 display: 'flex',
+//                 justifyContent: 'space-between',
+//                 alignItems: 'center',
+//                 marginBottom: '10px',
+//                 borderRadius: '10px',
+//                 padding: '5px',
+//                 cursor: 'pointer',
+//                 backgroundColor: '#e0f0f0'
+//             }}
+//         >
+//             {/* Left Section: Clickable note area */}
+//             <div
+//                 onClick={handleNoteClick}
+//                 style={{
+//                     display: 'flex',
+//                     alignItems: 'center',
+//                     flexGrow: 1, // Takes up the available space on the left
+//                     padding: '5px',
+//                 }}
+//             >
+//                 {getNoteIcon(note.type)}
+//                 <div style={{ marginLeft: '10px' }}>
+//                     <h4 style={{ margin: '0' }}>{note.name}</h4>
+//                     <small>{note.createdAt.toDate().toLocaleString()}</small>
+//                 </div>
+//             </div>
+
+//             {/* Right Section: 3-Dot Icon Menu */}
+//             <div style={{ marginLeft: '10px' }}>
+//                 <Menu position="bottom-end">
+//                     <Menu.Target>
+//                         <ActionIcon onClick={(e) => e.stopPropagation() /* Prevent note click on menu click */}>
+//                             <IconDots />
+//                         </ActionIcon>
+//                     </Menu.Target>
+//                     <Menu.Dropdown>
+//                         <Menu.Item onClick={() => onEdit(note)}>Edit Note</Menu.Item>
+//                         <Menu.Item>Move to Another Section</Menu.Item>
+//                         <Menu.Item color="red" onClick={() => onDelete(note.id)}>Delete Note</Menu.Item>
+//                     </Menu.Dropdown>
+//                 </Menu>
+//             </div>
+//         </div>
+//     );
+// };
+
+// export default NoteItem;
+
+
+
+
+////add docunote
 import React from 'react';
 import { ActionIcon, Menu } from '@mantine/core';
 import { IconDots, IconFile, IconCode, IconFileTypePdf } from '@tabler/icons-react';
@@ -284,11 +373,14 @@ const NoteItem = ({ note, onEdit, onDelete }) => {
 
     const handleNoteClick = () => {
         if (note.type === 'plain') {
-            navigate(`/modules/${note.moduleId}/notes/${note.id}`);
+            navigate(`/modules/${note.moduleId}/overview/sections/${note.sectionId}/notes/${note.id}`);
         } else if (note.type === 'code') {
-            navigate(`/modules/${note.moduleId}/notes/${note.id}`);
+            navigate(`/modules/${note.moduleId}/overview/sections/${note.sectionId}/code-notes/${note.id}`);
         } else if (note.type === 'document') {
-            navigate(`/modules/${note.moduleId}/notes/${note.id}`);
+            navigate(`/modules/${note.moduleId}/overview/sections/${note.sectionId}/docu-notes/${note.id}`, {
+                state: { pdfUrl: note.fileURL },
+            });
+            console.log("note.fileURL:", note.fileURL);
         }
     };
 

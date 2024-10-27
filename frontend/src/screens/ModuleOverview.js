@@ -327,7 +327,7 @@
 
 
 import React from 'react';
-import { Button, Card, List, Checkbox, Group } from '@mantine/core';
+import { Button, Group } from '@mantine/core';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import NoteOrganizer from '../components/NoteOrganizer'; // Import NoteOrganizer
 
@@ -337,7 +337,7 @@ const ModuleOverview = () => {
     const { id: moduleId } = useParams(); // Assuming `moduleId` is obtained from the route params
     const { moduleName } = location.state || { moduleName: 'Module' };
 
-    const sampleTodos = ['task 1', 'task 2', 'task 3'];
+    
 
     return (
         <div style={{ padding: '20px' }}>
@@ -356,19 +356,7 @@ const ModuleOverview = () => {
                     <NoteOrganizer moduleId={moduleId} /> {/* Add NoteOrganizer here */}
                 </div>
 
-                {/* To-Dos Section */}
-                <div style={{ width: '200px' }}>
-                    <h2>To-Dos</h2>
-                    <Card shadow="sm" padding="lg">
-                        <List>
-                            {sampleTodos.map((todo, index) => (
-                                <List.Item key={index}>
-                                    <Checkbox label={todo} />
-                                </List.Item>
-                            ))}
-                        </List>
-                    </Card>
-                </div>
+                
             </Group>
         </div>
     );

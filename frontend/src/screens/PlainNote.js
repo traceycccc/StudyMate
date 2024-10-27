@@ -212,7 +212,7 @@ import RichTextEditor from '../components/RichTextEditor';
 import { Button } from '@mantine/core';
 
 const PlainNote = () => {
-    const { noteId } = useParams(); // Extract noteId from the URL
+    const { moduleId, sectionId, noteId } = useParams(); // Extract noteId from the URL
     const [note, setNote] = useState(null);
     const [loading, setLoading] = useState(true);
     const editorRef = useRef(); // Create a ref to hold the editor instance
@@ -220,7 +220,7 @@ const PlainNote = () => {
     // Fetch the note data
     useEffect(() => {
         const fetchNote = async () => {
-            if (noteId) {
+            if (moduleId, sectionId, noteId) {
                 try {
                     const noteRef = doc(firestore, 'notes', noteId);
                     const noteSnap = await getDoc(noteRef);
@@ -236,7 +236,7 @@ const PlainNote = () => {
         };
 
         fetchNote();
-    }, [noteId]);
+    }, [noteId, moduleId, sectionId]);
 
     const handleInsertText = () => {
         if (editorRef.current) {

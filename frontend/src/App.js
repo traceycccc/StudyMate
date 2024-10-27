@@ -1267,6 +1267,125 @@
 
 
 
+// import React, { useCallback, useEffect, useState } from 'react';
+// import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+// import { auth } from './firebase';
+// import { onAuthStateChanged } from 'firebase/auth';
+// import Register from './screens/Register';
+// import Login from './screens/Login';
+// import ForgotPassword from './screens/ForgotPassword';
+// import AppLayout from './components/AppLayout'; // New Layout Component
+// import { MantineProvider, createTheme } from '@mantine/core';
+
+
+
+// const App = () => {
+//   const [user, setUser] = useState(null);
+//   const [loading, setLoading] = useState(true);
+//   const [emailVerified, setEmailVerified] = useState(false);
+//   const [polling, setPolling] = useState(false);
+//   const [theme, setTheme] = useState('light'); // Move theme state to App.js
+
+//   const startPollingVerification = useCallback((currentUser) => {
+//     if (!polling) {
+//       setPolling(true);
+//       const interval = setInterval(async () => {
+//         await currentUser.reload();
+//         if (currentUser.emailVerified) {
+//           setEmailVerified(true);
+//           clearInterval(interval);
+//           setPolling(false);
+//         }
+//       }, 3000);
+//     }
+//   }, [polling]);
+
+//   useEffect(() => {
+//     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+//       setUser(currentUser);
+//       setLoading(false);
+
+//       if (currentUser) {
+//         if (currentUser.emailVerified) {
+//           setEmailVerified(true);
+//         } else {
+//           setEmailVerified(false);
+//           startPollingVerification(currentUser);
+//         }
+//       }
+//     });
+
+//     return () => unsubscribe();
+//   }, [startPollingVerification]);
+
+//   const getTheme = () => {
+//     return createTheme({
+//       colorScheme: theme,  // This will dynamically apply light or dark theme
+//       colors: {
+//         dark: ['#C1C2C5', '#A6A7AB', '#909296', '#5C5F66', '#373A40', '#2C2E33', '#25262B', '#1A1B1E', '#141517', '#101113'],
+//         light: ['#F8F9FA', '#E9ECEF', '#DEE2E6', '#CED4DA', '#ADB5BD', '#6C757D', '#495057', '#343A40', '#212529', '#121314'],
+//       },
+//       primaryColor: 'blue',
+//       fontFamily: 'Arial, sans-serif',
+//       headings: {
+//         fontFamily: 'Arial, sans-serif',
+//         fontWeight: 700,
+//       },
+//     });
+//   };
+
+
+
+//   if (loading) {
+//     return <div>Loading...</div>;
+//   }
+
+//   return (
+//     <MantineProvider theme={getTheme()} withGlobalStyles withNormalizeCSS>
+//       <Router>
+//         <Routes>
+//           {/* Public Routes */}
+//           <Route path="/login" element={user ? <Navigate to="/home" /> : <Login />} />
+//           <Route path="/register" element={user ? <Navigate to="/home" /> : <Register />} />
+//           <Route path="/forgot-password" element={<ForgotPassword />} />
+
+//           {/* Protected Routes */}
+//           {user && (
+//             <>
+//               <Route
+//                 path="/*"
+//                 element={
+//                   emailVerified ? (
+//                     <AppLayout theme={theme} setTheme={setTheme} />
+//                   ) : (
+//                     <div>
+//                       <h2>Please verify your email before accessing the app.</h2>
+//                       <p>Check your email and click the verification link to proceed.</p>
+//                       <button onClick={() => auth.currentUser.sendEmailVerification()}>
+//                         Resend Verification Email
+//                       </button>
+//                       <button onClick={() => auth.signOut()}>Log Out</button>
+//                     </div>
+//                   )
+//                 }
+//               />
+//             </>
+//           )}
+
+//           {/* Redirect to login or home based on the user's status */}
+//           <Route path="/" element={user ? <Navigate to="/home" /> : <Navigate to="/login" />} />
+//         </Routes>
+//       </Router>
+//     </MantineProvider>
+//   );
+// };
+
+// export default App;
+
+
+
+
+//stupid issue from the rules and paths url undefined
 import React, { useCallback, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { auth } from './firebase';
@@ -1312,6 +1431,9 @@ const App = () => {
           setEmailVerified(false);
           startPollingVerification(currentUser);
         }
+      } else {
+        setUser(null); // Ensure user is set to null when logged out
+        setEmailVerified(false); // Reset email verification status
       }
     });
 
