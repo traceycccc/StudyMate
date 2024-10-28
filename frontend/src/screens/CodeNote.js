@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { Button } from '@mantine/core';
+import { useNavigate, useParams } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { ref, getDownloadURL } from 'firebase/storage';
 import { firestore, storage } from '../firebase';
@@ -12,7 +13,8 @@ const CodeNote = () => {
 
     console.log("Rendering CodeNote component..."); // Add this line for debugging
 
-    const { noteId } = useParams(); 
+    const navigate = useNavigate();
+    const { noteId, moduleId } = useParams(); 
     const [fileContent, setFileContent] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [note, setNote] = useState(null);
@@ -70,6 +72,9 @@ const CodeNote = () => {
 
     return (
         <div style={{ display: 'flex', gap: '20px', padding: '20px' }}>
+            <Button variant="subtle" onClick={() => navigate(`/modules/${moduleId}/overview`)}>
+                ← Back
+            </Button>
             {/* Code Viewer Section */}
             <div style={{ flex: 1, height: '95vh', overflowY: 'auto', padding: '10px', border: '1px solid #ddd', borderRadius: '8px' }}>
                 <h3>Viewing Code: {note ? note.name : 'Loading...'}</h3>

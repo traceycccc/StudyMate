@@ -645,8 +645,128 @@ app.post('/summarize-pdf', pdfUpload.single('file'), async (req, res) => {
     }
 });
 //-------------------------------------------------------------------------------------------------------
+//next key concept
 
+// Route to handle PDF key concepts extraction
+app.post('/extract-key-concepts', pdfUpload.single('file'), async (req, res) => {
+    if (!req.file || !req.file.path) {
+        console.error("File upload failed or file path is missing.");
+        return res.status(400).json({ error: 'No file uploaded or invalid file path.' });
+    }
 
+    const filePath = req.file.path;
+    const readStream = fs.createReadStream(filePath);
+
+    try {
+        // Prepare FormData
+        const formData = new FormData();
+        formData.append('file', readStream);
+
+        const pythonResponse = await axios.post('http://localhost:5001/extract-text', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+
+        const pdfText = pythonResponse.data.text;
+
+        console.log("Extracted PDF Content (to be analyzed for key concepts):\n", pdfText);
+
+        // Call GPT model for key concepts extraction
+        const openaiResponse = await axios.post(
+            'https://api.openai.com/v1/chat/completions',
+            {
+                model: 'gpt-3.5-turbo',
+                messages: [
+                    { role: 'system', content: 'You are a helpful assistant that extracts key concepts from documents.' },
+                    { role: 'user', content: `Identify and explain the key concepts in the following PDF content:\n\n${pdfText}` },
+                ],
+                max_tokens: 500,
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
+
+        const keyConcepts = openaiResponse.data.choices[0].message.content;
+        res.status(200).json({ keyConcepts });
+    } catch (error) {
+        console.error("Error processing PDF for key concepts:", error);
+        res.status(500).json({ error: 'Failed to extract key concepts.' });
+    } finally {
+        fs.unlink(filePath, (err) => {
+            if (err) {
+                console.error("Error deleting the file:", err);
+            } else {
+                console.log("File successfully deleted.");
+            }
+        });
+    }
+});
+//-----------------------------------------------------------------------------------------------
+//next, contextual q&a
+
+// Route to handle contextual Q&A
+app.post('/contextual-qa', pdfUpload.single('file'), async (req, res) => {
+    if (!req.file || !req.file.path) {
+        console.error("File upload failed or file path is missing.");
+        return res.status(400).json({ error: 'No file uploaded or invalid file path.' });
+    }
+
+    const filePath = req.file.path;
+    const readStream = fs.createReadStream(filePath);
+
+    const userPrompt = req.body.prompt; // Get the user prompt from the request
+
+    try {
+        // Prepare FormData
+        const formData = new FormData();
+        formData.append('file', readStream);
+
+        const pythonResponse = await axios.post('http://localhost:5001/extract-text', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+
+        const pdfText = pythonResponse.data.text;
+
+        console.log("Extracted PDF Content (for contextual Q&A):\n", pdfText);
+
+        // Call GPT model for contextual Q&A
+        const openaiResponse = await axios.post(
+            'https://api.openai.com/v1/chat/completions',
+            {
+                model: 'gpt-3.5-turbo',
+                messages: [
+                    { role: 'system', content: 'You are an assistant who provides answers strictly based on the PDF document only. If the question does not relate to the content, clarify that you can only respond to questions relevant to the document.' },
+                    { role: 'user', content: `${userPrompt}\n\nPDF Content:\n${pdfText}` },
+                ],
+                max_tokens: 500,
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
+
+        const answer = openaiResponse.data.choices[0].message.content;
+        res.status(200).json({ answer });
+    } catch (error) {
+        console.error("Error processing PDF for contextual Q&A:", error);
+        res.status(500).json({ error: 'Failed to generate answer.' });
+    } finally {
+        fs.unlink(filePath, (err) => {
+            if (err) {
+                console.error("Error deleting the file:", err);
+            } else {
+                console.log("File successfully deleted.");
+            }
+        });
+    }
+});
+//----------------------------------------------------------------------------------------------
 //suddenly cannot work?? fixed
 // Route to handle file conversion from DOCX/PPTX to PDF
 app.post('/convert-to-pdf', upload.single('file'), async (req, res) => {

@@ -205,13 +205,14 @@
 
 
 import React, { useEffect, useState, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { firestore } from '../firebase';
 import RichTextEditor from '../components/RichTextEditor';
 import { Button } from '@mantine/core';
 
 const PlainNote = () => {
+    const navigate = useNavigate();
     const { moduleId, sectionId, noteId } = useParams(); // Extract noteId from the URL
     const [note, setNote] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -238,34 +239,36 @@ const PlainNote = () => {
         fetchNote();
     }, [noteId, moduleId, sectionId]);
 
-    const handleInsertText = () => {
-        if (editorRef.current) {
-            // Insert test text as bullet points
-            const points = [
-                "1. Introduction",
-                "2. Overview of the PDF",
-                "3. Key Concepts",
-                "4. Applications",
-                "5. Conclusion",
-            ];
-            // const formattedText = points.map(point => `<p>${point}</p>`).join('');
-            // // Use the insertText method from the ref
-            // //editorRef.current.insertText(formattedText);
-            // editorRef.current.editor.commands.insertContent(formattedText); // Use insertContent instead
+    // const handleInsertText = () => {
+    //     if (editorRef.current) {
+    //         // Insert test text as bullet points
+    //         const points = [
+    //             "1. Introduction",
+    //             "2. Overview of the PDF",
+    //             "3. Key Concepts",
+    //             "4. Applications",
+    //             "5. Conclusion",
+    //         ];
+    //         // const formattedText = points.map(point => `<p>${point}</p>`).join('');
+    //         // // Use the insertText method from the ref
+    //         // //editorRef.current.insertText(formattedText);
+    //         // editorRef.current.editor.commands.insertContent(formattedText); // Use insertContent instead
 
-            const formattedText = points.join('</p><p>'); // Use line breaks between points
-            editorRef.current.insertText(formattedText); // Call the insertText method from the ref
-        }
-    };
+    //         const formattedText = points.join('</p><p>'); // Use line breaks between points
+    //         editorRef.current.insertText(formattedText); // Call the insertText method from the ref
+    //     }
+    // };
 
     if (loading) return <div>Loading...</div>;
     if (!note) return <div>Note not found</div>;
 
     return (
         <div>
+            <Button variant="subtle" onClick={() => navigate(`/modules/${moduleId}/overview`)}>
+                ← Back
+            </Button>
             <h1>{note.name}</h1>
-            <Button onClick={handleInsertText} mb="md">Insert Test Points</Button>
-            {/* Render the RichTextEditor component with the noteId prop and the ref */}
+            
             <RichTextEditor ref={editorRef} noteId={noteId} />
         </div>
     );

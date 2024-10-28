@@ -87,10 +87,17 @@
 
 import React from 'react';
 import { Card, ActionIcon, Menu } from '@mantine/core';
-import { IconDots, IconHeart, IconHeartFilled } from '@tabler/icons-react';
+import { IconDots, IconHeart, IconHeartFilled, IconCards } from '@tabler/icons-react';
+import { useNavigate } from 'react-router-dom'; 
 
 
 const ModuleCard = ({ module, onToggleFavorite, onEditModule, onDeleteModule, onModuleClick }) => {
+    const navigate = useNavigate(); // Initialize navigate
+    const handleFlashcardsClick = (moduleId) => {
+        navigate(`/modules/${moduleId}/overview/flashcards`, { state: { from: 'modules-main' } });
+    };
+
+
     return (
         <Card
             style={{ width: '260px', position: 'relative', borderRadius: '8px', border: '1px solid #ccc', padding: '0px' }}
@@ -127,6 +134,23 @@ const ModuleCard = ({ module, onToggleFavorite, onEditModule, onDeleteModule, on
                     borderTop: '1px solid #ccc',
                 }}
             >
+                {/* Flashcards Icon */}
+                <ActionIcon
+                    onClick={() => handleFlashcardsClick(module.id)}
+                    style={{
+                        color: 'black',
+                        backgroundColor: 'transparent',
+                        marginRight: '10px',
+                        borderRadius: '30px',
+                        transition: 'background-color 0.3s ease',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#e0e0e0')} // Hover color
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')} // Original color when not hovered
+                >
+                    <IconCards />
+                </ActionIcon>
+
+
                 <ActionIcon
                     onClick={() => onToggleFavorite(module.id, module.favorite)}
                     style={{

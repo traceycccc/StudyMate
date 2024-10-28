@@ -346,7 +346,12 @@ const ModuleOverview = () => {
             </Button>
 
             <h1>{moduleName}</h1>
-            <Button color="blue" size="md" style={{ marginBottom: '20px' }}>
+            <Button 
+                color="blue" 
+                size="md" 
+                style={{ marginBottom: '20px' }}
+                onClick={() => navigate(`/modules/${moduleId}/overview/flashcards`, { state: { from: 'module-overview' } })}
+            >
                 Go to FlashCards
             </Button>
 

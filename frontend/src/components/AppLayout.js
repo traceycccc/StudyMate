@@ -605,7 +605,6 @@ import Tasks from '../screens/Tasks';
 import Settings from '../screens/Settings';
 import TestScreen from '../screens/TestScreen';
 
-//import ModuleNotesLayout from './ModuleNotesLayout';
 
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebase';
@@ -650,7 +649,8 @@ const AppLayout = ({ theme, setTheme }) => {
                     <Route path="/modules" element={<Modules />} />
                     <Route path="/modules/:id/overview" element={<ModuleOverview />} />
 
-                    <Route path="/modules/:id/flashcards" element={<Flashcards />} />
+                    <Route path="/modules/:moduleId/overview/flashcards" element={<Flashcards />} />
+
 
                     {/* Note Page with Secondary Nav
                     <Route path="/modules/:id/note/:noteId" element={<NotePage />} /> */}
