@@ -255,30 +255,225 @@
 
 
 //redo again
+// import React, { useState, useEffect, useRef } from 'react';
+// import { useLocation, useNavigate, useParams } from 'react-router-dom';
+// import PDFViewer from '../components/PDFViewer';
+// import { doc, getDoc } from 'firebase/firestore';
+// import { firestore } from '../firebase';
+// import RichTextEditor from '../components/RichTextEditor';
+// import { Container, Grid } from '@mantine/core';
+
+// const DocuNote = () => {
+    
+//     const location = useLocation();
+//     const navigate = useNavigate();
+//     const pdfUrl = location.state?.pdfUrl;
+//     const { noteId } = useParams();
+//     const [note, setNote] = useState(null);
+//     const [loading, setLoading] = useState(true);
+//     const editorRef = useRef();
+
+//     useEffect(() => {
+//         if (pdfUrl) {
+//             setPdfReady(true);
+//         } else {
+//             // Navigate back if pdfUrl is not present
+//             console.error('PDF URL is missing. Redirecting back to the selection page.');
+//             navigate('/modules'); // Adjust the path based on your module's route
+//         }
+//     }, [pdfUrl, navigate]);
+
+//     // Fetch the note data
+//     useEffect(() => {
+//         const fetchNote = async () => {
+//             if (noteId) {
+//                 try {
+//                     const noteRef = doc(firestore, 'notes', noteId);
+//                     const noteSnap = await getDoc(noteRef);
+//                     if (noteSnap.exists()) {
+//                         setNote(noteSnap.data());
+//                     }
+//                 } catch (error) {
+//                     console.error('Error fetching note:', error);
+//                 } finally {
+//                     setLoading(false);
+//                 }
+//             }
+//         };
+
+//         fetchNote();
+//     }, [noteId]);
+
+//     if (loading) return <div>Loading...</div>;
+//     if (!note) return <div>Note not found</div>;
+
+//     return (
+//         <Container fluid style={{ padding: '20px' }}>
+//             <Grid style={{ height: '90vh' }}>
+//                 <Grid.Col span={6} style={{ overflow: 'hidden' }}>
+//                     {pdfReady ? (
+//                         <PDFViewer pdfUrl={pdfUrl} />
+//                     ) : (
+//                         <p>Loading PDF...</p>
+//                     )}
+//                 </Grid.Col>
+//                 <Grid.Col span={6} style={{ overflowY: 'auto', paddingLeft: '20px' }}>
+//                     <RichTextEditor ref={editorRef} noteId={noteId} />
+//                 </Grid.Col>
+//             </Grid>
+//         </Container>
+//     );
+// };
+
+// export default DocuNote;
+
+
+
+
+// import React, { useState, useEffect, useRef } from 'react';
+// import { useLocation, useNavigate, useParams } from 'react-router-dom';
+// import PDFViewer from '../components/PDFViewer';
+// import { doc, getDoc } from 'firebase/firestore';
+// import { firestore } from '../firebase';
+// import RichTextEditor from '../components/RichTextEditor';
+// import { Container, Grid, Button } from '@mantine/core';
+// import axios from 'axios';
+
+// const DocuNote = () => {
+//     const location = useLocation();
+//     const navigate = useNavigate();
+//     const pdfUrl = location.state?.pdfUrl;
+//     const { noteId } = useParams();
+//     const [note, setNote] = useState(null);
+//     const [loading, setLoading] = useState(true);
+//     const [pdfReady, setPdfReady] = useState(false);
+//     const [isSummarizing, setIsSummarizing] = useState(false);
+//     const editorRef = useRef();
+
+//     useEffect(() => {
+//         if (pdfUrl) {
+//             setPdfReady(true);
+//         } else {
+//             console.error('PDF URL is missing. Redirecting back to the selection page.');
+//             navigate('/modules'); // Adjust the path based on your module's route
+//         }
+//     }, [pdfUrl, navigate]);
+
+//     // Fetch the note data
+//     useEffect(() => {
+//         const fetchNote = async () => {
+//             if (noteId) {
+//                 try {
+//                     const noteRef = doc(firestore, 'notes', noteId);
+//                     const noteSnap = await getDoc(noteRef);
+//                     if (noteSnap.exists()) {
+//                         setNote(noteSnap.data());
+//                     }
+//                 } catch (error) {
+//                     console.error('Error fetching note:', error);
+//                 } finally {
+//                     setLoading(false);
+//                 }
+//             }
+//         };
+
+//         fetchNote();
+//     }, [noteId]);
+
+//     // Function to handle PDF summarization
+//     const handleSummarizePdf = async () => {
+//         if (!pdfUrl) {
+//             console.error('PDF URL is missing.');
+//             return;
+//         }
+
+//         setIsSummarizing(true);
+
+//         try {
+//             // Fetch the PDF file as a Blob
+//             const response = await fetch(pdfUrl);
+//             const blob = await response.blob();
+//             const file = new File([blob], 'document.pdf', { type: blob.type });
+
+//             // Prepare FormData
+//             const formData = new FormData();
+//             formData.append('file', file);
+
+//             // Send the PDF file to the backend for summarization
+//             const { data } = await axios.post('http://localhost:3000/summarize-pdf', formData, {
+//                 headers: { 'Content-Type': 'multipart/form-data' },
+//             });
+
+//             // Set the summary content in the editor
+//             if (editorRef.current) {
+//                 editorRef.current.setContent(data.summary);
+//             }
+
+//         } catch (error) {
+//             console.error('Error summarizing the PDF:', error);
+//         } finally {
+//             setIsSummarizing(false);
+//         }
+//     };
+
+//     if (loading) return <div>Loading...</div>;
+//     if (!note) return <div>Note not found</div>;
+
+//     return (
+//         <Container fluid style={{ padding: '20px' }}>
+//             <Grid style={{ height: '90vh' }}>
+//                 <Grid.Col span={6} style={{ overflow: 'hidden' }}>
+//                     {pdfReady ? (
+//                         <PDFViewer pdfUrl={pdfUrl} />
+//                     ) : (
+//                         <p>Loading PDF...</p>
+//                     )}
+//                 </Grid.Col>
+//                 <Grid.Col span={6} style={{ overflowY: 'auto', paddingLeft: '20px' }}>
+//                     <Button
+//                         onClick={handleSummarizePdf}
+//                         loading={isSummarizing}
+//                         disabled={isSummarizing}
+//                         style={{ marginBottom: '10px' }}
+//                     >
+//                         Summarize PDF
+//                     </Button>
+//                     <RichTextEditor ref={editorRef} noteId={noteId} />
+//                 </Grid.Col>
+//             </Grid>
+//         </Container>
+//     );
+// };
+
+// export default DocuNote;
+
+
+
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import PDFViewer from '../components/PDFViewer';
 import { doc, getDoc } from 'firebase/firestore';
 import { firestore } from '../firebase';
 import RichTextEditor from '../components/RichTextEditor';
-import { Container, Grid } from '@mantine/core';
+import { Container, Grid, Button } from '@mantine/core';
+import axios from 'axios';
 
 const DocuNote = () => {
-
     const location = useLocation();
     const navigate = useNavigate();
     const pdfUrl = location.state?.pdfUrl;
-    const [pdfReady, setPdfReady] = useState(false);
     const { noteId } = useParams();
     const [note, setNote] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [pdfReady, setPdfReady] = useState(false);
+    const [isSummarizing, setIsSummarizing] = useState(false);
     const editorRef = useRef();
 
     useEffect(() => {
         if (pdfUrl) {
             setPdfReady(true);
         } else {
-            // Navigate back if pdfUrl is not present
             console.error('PDF URL is missing. Redirecting back to the selection page.');
             navigate('/modules'); // Adjust the path based on your module's route
         }
@@ -305,6 +500,42 @@ const DocuNote = () => {
         fetchNote();
     }, [noteId]);
 
+    // Function to handle PDF summarization
+    const handleSummarizePdf = async () => {
+        if (!pdfUrl) {
+            console.error('PDF URL is missing.');
+            return;
+        }
+
+        setIsSummarizing(true);
+
+        try {
+            // Fetch the PDF file as a Blob
+            const response = await fetch(pdfUrl);
+            const blob = await response.blob();
+            const file = new File([blob], 'document.pdf', { type: blob.type });
+
+            // Prepare FormData
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // Send the PDF file to the backend for summarization
+            const { data } = await axios.post('/summarize-pdf', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+
+            // Set the summary content in the editor
+            if (editorRef.current) {
+                editorRef.current.insertText(data.summary);
+            }
+
+        } catch (error) {
+            console.error('Error summarizing the PDF:', error);
+        } finally {
+            setIsSummarizing(false);
+        }
+    };
+
     if (loading) return <div>Loading...</div>;
     if (!note) return <div>Note not found</div>;
 
@@ -319,6 +550,14 @@ const DocuNote = () => {
                     )}
                 </Grid.Col>
                 <Grid.Col span={6} style={{ overflowY: 'auto', paddingLeft: '20px' }}>
+                    <Button
+                        onClick={handleSummarizePdf}
+                        loading={isSummarizing}
+                        disabled={isSummarizing}
+                        style={{ marginBottom: '10px' }}
+                    >
+                        Summarize PDF
+                    </Button>
                     <RichTextEditor ref={editorRef} noteId={noteId} />
                 </Grid.Col>
             </Grid>
@@ -327,3 +566,4 @@ const DocuNote = () => {
 };
 
 export default DocuNote;
+
