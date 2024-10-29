@@ -1,0 +1,201 @@
+/* editorStyle.css */
+
+
+
+
+
+/* Toolbar container */
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 4px;
+    /* background-color: #f8f8f8; */
+    border-radius: 8px;
+    /* border-bottom: 1px solid #e0e0e0; */
+}
+
+/* Default button style */
+.toolbar button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    background-color: transparent;
+    border: none;
+    color: #333;
+    /* Default icon color */
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 6px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    border-radius: 20px;
+}
+
+/* Hover state */
+.toolbar button:hover:not(.active):not(:disabled) {
+    background-color: rgba(51, 51, 51, 0.1);
+    /* Black with transparency */
+}
+
+/* Active state (when clicked or toggled) */
+.toolbar button.active {
+    background-color: rgba(0, 123, 255, 0.2);
+    /* Blue with transparency */
+    color: #007bff;
+    /* Blue icon color */
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Disabled state */
+.toolbar button:disabled {
+    color: #bbb;
+    /* Light grey icon for disabled */
+    cursor: not-allowed;
+}
+
+/* SVG icon size */
+.toolbar button svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Additional styling for button groups */
+.toolbar .button-group {
+    margin-right: 8px;
+    display: flex;
+    gap: 4px;
+}
+
+
+
+
+blockquote {
+    border-left: 4px solid #d1d1d1;
+    margin: 1.5rem 0;
+    padding-left: 1rem;
+    font-style: italic;
+    color: #333;
+}
+
+/* Style for inline code */
+code {
+  background-color: #f1f3f5;
+  border-radius: 4px;
+  padding: 2px 4px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.84rem;
+  vertical-align: middle;
+  line-height: 1;
+  
+}
+
+/* Style for code blocks */
+pre {
+  background-color: #2d2d2d;
+  color: #f8f8f2;
+  border-radius: 4px;
+  padding: 1rem;
+  font-family: monospace;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+/* Ensure the code inside code blocks also has the correct style */
+pre code {
+  background: none;
+  color: inherit;
+  font-size: 0.84rem;
+  padding: 0;
+}
+
+
+.tableWrapper {
+    overflow-x: auto;
+}
+
+
+/* Table-specific styling */
+table {
+    border-collapse: collapse;
+
+    table-layout: fixed;
+    width: 100%;
+}
+
+td,
+th {
+    padding: 8px;
+    border: 1px solid #ddd;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Column resize handle */
+.column-resize-handle {
+    background-color: #326ee6;
+    /* Color for the resize handle */
+    width: 4px;
+    cursor: col-resize;
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 1;
+}
+
+th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+
+
+
+/* List styles */
+ul,
+ol {
+    padding: 0 1rem;
+    margin: 1.25rem 1rem 1.25rem 0.4rem;
+
+    li p {
+        margin-top: 0.25em;
+        margin-bottom: 0.25em;
+    }
+}
+
+/* Task list specific styles */
+ul[data-type="taskList"] {
+    list-style: none;
+    margin-left: 0;
+    padding: 0;
+
+    li {
+        align-items: center;
+            /* Centers the text vertically with the checkbox */
+        display: flex;
+
+        >label {
+            flex: 0 0 auto;
+            margin-right: 0.5rem;
+            user-select: none;
+        }
+
+        >div {
+            flex: 1 1 auto;
+        }
+    }
+
+    input[type="checkbox"] {
+        cursor: pointer;
+    }
+
+    ul[data-type="taskList"] {
+        margin: 0;
+    }
+}

@@ -1395,6 +1395,8 @@ import Login from './screens/Login';
 import ForgotPassword from './screens/ForgotPassword';
 import AppLayout from './components/AppLayout'; // New Layout Component
 import { MantineProvider, createTheme } from '@mantine/core';
+import 'katex/dist/katex.min.css';
+
 
 
 
