@@ -506,6 +506,7 @@
 ///trying on the different directory see
 ////document + note now:, DocuNote.js
 //attempting to fixxxx
+//attempt to add the generate flashcard as well
 const axios = require('axios');
 
 const express = require('express');
@@ -767,6 +768,86 @@ app.post('/contextual-qa', pdfUpload.single('file'), async (req, res) => {
     }
 });
 //----------------------------------------------------------------------------------------------
+
+//adding the generate flashcards now!
+app.post('/generate-flashcards', pdfUpload.single('file'), async (req, res) => {
+    console.log("successfully called the api");
+    
+    if (!req.file || !req.file.path) {
+        console.error("File upload failed or file path is missing.");
+        return res.status(400).json({ error: 'No file uploaded or invalid file path.' });
+    }
+
+    const filePath = req.file.path;
+    const readStream = fs.createReadStream(filePath);
+
+    try {
+        const formData = new FormData();
+        formData.append('file', readStream);
+
+        // Extract text from the PDF
+        const pythonResponse = await axios.post('http://localhost:5001/extract-text', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        const pdfText = pythonResponse.data.text;
+
+        // Log the extracted text to the console
+        console.log("Extracted PDF Content (to GPT for flashcard):\n", pdfText);
+
+        // Send the extracted text to GPT to generate flashcards
+        const openaiResponse = await axios.post(
+            'https://api.openai.com/v1/chat/completions',
+            {
+                model: 'gpt-3.5-turbo',
+                messages: [
+                    { role: 'system', content: 'You are an assistant that creates flashcards from text.' },
+                    {
+                        role: 'user',
+                        content: `Create 5 flashcards from the following text. Each flashcard should have a "question" and an "answer". 
+                         Do not improvise or rephrase the original content—use exact words from the provided text wherever possible. 
+                         You can omit unnecessary words for conciseness but do not add new information or paraphrase. 
+                         The flashcards must be accurate and should capture the key information as closely as possible to the original text. 
+                         Output the flashcards as a valid JSON array with this structure:
+                          [{ "question": "Your question here", "answer": "Your answer here" }]. Here is the text: "${pdfText}"`
+                    }
+                ],
+                max_tokens: 1000,
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
+
+        // Log the response from GPT-3.5
+        console.log("GPT-3.5 API response:", openaiResponse.data);
+
+        const flashcardData = openaiResponse.data.choices[0].message.content;
+
+        // Log the extracted flashcards
+        //console.log("Extracted flashcards data:", flashcardData);
+
+        res.status(200).json({ flashcards: flashcardData });
+    } catch (error) {
+        console.error("Error generating flashcards:", error);
+        res.status(500).json({ error: 'Failed to generate flashcards.' });
+    } finally {
+        fs.unlink(filePath, (err) => {
+            if (err) {
+                console.error("Error deleting the file:", err);
+            } else {
+                console.log("File successfully deleted.");
+            }
+        });
+    }
+});
+
+
+//----------------------------------------------------------------------
+
+
 //suddenly cannot work?? fixed
 // Route to handle file conversion from DOCX/PPTX to PDF
 app.post('/convert-to-pdf', upload.single('file'), async (req, res) => {
@@ -838,9 +919,7 @@ app.post('/convert-to-pdf', upload.single('file'), async (req, res) => {
         });
     });
 });
-
-
-
+//-
 //after splitting the pages
 app.post('/explain-code', async (req, res) => {
     const { code } = req.body;
