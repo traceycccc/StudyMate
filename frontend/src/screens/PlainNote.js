@@ -221,6 +221,7 @@ const PlainNote = () => {
     // Fetch the note data
     useEffect(() => {
         const fetchNote = async () => {
+            
             if (moduleId, sectionId, noteId) {
                 try {
                     const noteRef = doc(firestore, 'notes', noteId);
@@ -264,7 +265,10 @@ const PlainNote = () => {
 
     return (
         <div>
-            <Button variant="subtle" onClick={() => navigate(`/modules/${moduleId}/overview`)}>
+            {/* <Button variant="subtle" onClick={() => navigate(`/modules/${moduleId}/overview`)}>
+                ← Back
+            </Button> */}
+            <Button variant="subtle" onClick={() => navigate(-1)}>
                 ← Back
             </Button>
             <h1>{note.name}</h1>

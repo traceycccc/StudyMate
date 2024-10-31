@@ -1785,7 +1785,10 @@ const DocuNote = () => {
 
     return (
         <Container fluid style={{ padding: '20px' }}>
-            <Button variant="subtle" onClick={() => navigate(`/modules/${moduleId}/overview`)}>
+            {/* <Button variant="subtle" onClick={() => navigate(`/modules/${moduleId}/overview`)}>
+                ← Back
+            </Button> */}
+            <Button variant="subtle" onClick={() => navigate(-1)}>
                 ← Back
             </Button>
             <Grid style={{ height: '90vh' }}>

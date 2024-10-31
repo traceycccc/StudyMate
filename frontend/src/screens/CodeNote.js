@@ -14,7 +14,8 @@ const CodeNote = () => {
     console.log("Rendering CodeNote component..."); // Add this line for debugging
 
     const navigate = useNavigate();
-    const { noteId, moduleId } = useParams(); 
+    // const { noteId, moduleId } = useParams(); 
+    const { noteId } = useParams(); 
     const [fileContent, setFileContent] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [note, setNote] = useState(null);
@@ -72,7 +73,10 @@ const CodeNote = () => {
 
     return (
         <div style={{ display: 'flex', gap: '20px', padding: '20px' }}>
-            <Button variant="subtle" onClick={() => navigate(`/modules/${moduleId}/overview`)}>
+            {/* <Button variant="subtle" onClick={() => navigate(`/modules/${moduleId}/overview`)}>
+                ← Back
+            </Button> */}
+            <Button variant="subtle" onClick={() => navigate(-1)}>
                 ← Back
             </Button>
             {/* Code Viewer Section */}
