@@ -258,7 +258,8 @@ const TestSession = () => {
     const handleQuitTest = () => {
         setIsQuitModalOpen(false);
         console.log("Test session quit. Progress discarded.");
-        navigate('/modules/:moduleId/overview/flashcards'); // Adjust path as needed
+        // navigate('/modules/:moduleId/overview/flashcards'); // Adjust path as needed
+        navigate(-1); // Navigate back to the previous page in history
     };
 
     // Calculate score summary
