@@ -587,8 +587,112 @@
 
 //stupid url undefined, and chanegd rules and the add stiuff
 
+// import React from 'react';
+// import { Routes, Route, Outlet, useNavigate } from 'react-router-dom';
+// import { NavbarMinimal } from './NavbarMinimal';
+
+// import Home from '../screens/Home';
+// import Modules from '../screens/Modules';
+// import ModuleOverview from '../screens/ModuleOverview';
+
+// import Flashcards from '../screens/Flashcards';
+// import TestSession from '../screens/TestSession'; // Import TestSession component
+
+// import PlainNote from '../screens/PlainNote'; // Import the PlainNote component
+// import CodeNote from '../screens/CodeNote';
+// import DocuNote from '../screens/DocuNote';
+
+// import Tasks from '../screens/Tasks';
+// import Settings from '../screens/Settings';
+// import TestScreen from '../screens/TestScreen';
+
+
+// import { signOut } from 'firebase/auth';
+// import { auth } from '../firebase';
+
+// const AppLayout = ({ theme, setTheme }) => {
+
+//     const navigate = useNavigate(); // Initialize navigate
+
+//     // Logout function to handle sign out and redirection
+//     const handleLogout = () => {
+//         signOut(auth)
+//             .then(() => {
+//                 console.log('User signed out');
+//                 navigate('/login', { replace: true }); // Redirect to login page after logout
+//             })
+//             .catch((error) => {
+//                 console.error('Error logging out:', error);
+//             });
+//     };
+
+
+
+//     return (
+//         <div style={{ display: 'flex' }}>
+//             {/* Navbar remains consistent */}
+//             <NavbarMinimal onLogout={handleLogout} theme={theme} setTheme={setTheme} />
+
+//             <div
+//                 style={{
+//                     flexGrow: 1,             // Expand the content area
+//                     marginLeft: '30px',
+//                     overflowY: 'auto',        // Vertical scrolling
+//                     overflowX: 'hidden',      // Disable horizontal scrolling
+//                     height: '100vh',          // Fixed height for the content area
+//                     width: '100%',            // Full width for the content area
+//                     boxSizing: 'border-box',  // Ensure padding doesn't affect width calculation
+//                 }}
+//             >
+//                 {/* Content area that dynamically changes based on the route */}
+//                 <Routes>
+//                     <Route path="/home" element={<Home />} />
+//                     <Route path="/modules" element={<Modules />} />
+//                     <Route path="/modules/:id/overview" element={<ModuleOverview />} />
+
+//                     <Route path="/modules/:moduleId/overview/flashcards" element={<Flashcards />} />
+//                     <Route path="/test-session" element={<TestSession />} />
+
+
+//                     {/* Note Page with Secondary Nav
+//                     <Route path="/modules/:id/note/:noteId" element={<NotePage />} /> */}
+//                     {/* Plain Note Route */}
+//                     <Route path="/modules/:moduleId/overview/sections/:sectionId/notes/:noteId" element={<PlainNote />} />
+
+//                     {/* Route for Code Notes */}
+//                     <Route path="/modules/:moduleId/overview/sections/:sectionId/code-notes/:noteId" element={<CodeNote />} />
+
+//                     <Route path="/modules/:moduleId/overview/sections/:sectionId/docu-notes/:noteId" element={<DocuNote />} />
+
+
+
+
+
+//                     <Route path="/tasks" element={<Tasks />} />
+//                     <Route path="/settings" element={<Settings />} />
+
+
+//                     <Route path="/test" element={<TestScreen />} />
+
+
+
+
+//                 </Routes>
+
+//                 <Outlet />
+//             </div>
+//         </div>
+
+//     );
+// };
+
+// export default AppLayout;
+
+
+
+//fix the nav bar to dissapear in the test session page
 import React from 'react';
-import { Routes, Route, Outlet, useNavigate } from 'react-router-dom';
+import { Routes, Route, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { NavbarMinimal } from './NavbarMinimal';
 
 import Home from '../screens/Home';
@@ -596,6 +700,7 @@ import Modules from '../screens/Modules';
 import ModuleOverview from '../screens/ModuleOverview';
 
 import Flashcards from '../screens/Flashcards';
+import TestSession from '../screens/TestSession'; // Import TestSession component
 
 import PlainNote from '../screens/PlainNote'; // Import the PlainNote component
 import CodeNote from '../screens/CodeNote';
@@ -612,6 +717,7 @@ import { auth } from '../firebase';
 const AppLayout = ({ theme, setTheme }) => {
 
     const navigate = useNavigate(); // Initialize navigate
+     const location = useLocation(); // Get the current path
 
     // Logout function to handle sign out and redirection
     const handleLogout = () => {
@@ -630,12 +736,21 @@ const AppLayout = ({ theme, setTheme }) => {
     return (
         <div style={{ display: 'flex' }}>
             {/* Navbar remains consistent */}
-            <NavbarMinimal onLogout={handleLogout} theme={theme} setTheme={setTheme} />
+            {/* Conditionally hide the Navbar */}
+            <div
+                style={{
+                    visibility: location.pathname === '/test-session' ? 'hidden' : 'visible',
+                    width: location.pathname === '/test-session' ? '0' : 'auto',
+                   
+                }}
+            >
+                <NavbarMinimal onLogout={handleLogout} theme={theme} setTheme={setTheme} />
+            </div>
 
             <div
                 style={{
                     flexGrow: 1,             // Expand the content area
-                    marginLeft: '30px',
+                    marginLeft: location.pathname === '/test-session' ? '0' : '30px', // Adjust margin based on Navbar visibility
                     overflowY: 'auto',        // Vertical scrolling
                     overflowX: 'hidden',      // Disable horizontal scrolling
                     height: '100vh',          // Fixed height for the content area
@@ -650,6 +765,7 @@ const AppLayout = ({ theme, setTheme }) => {
                     <Route path="/modules/:id/overview" element={<ModuleOverview />} />
 
                     <Route path="/modules/:moduleId/overview/flashcards" element={<Flashcards />} />
+                    <Route path="/test-session" element={<TestSession />} />
 
 
                     {/* Note Page with Secondary Nav

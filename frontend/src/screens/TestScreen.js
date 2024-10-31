@@ -43,6 +43,9 @@
 // export default TestScreen;
 
 
+
+
+
 // import React, { useState } from 'react';
 
 // // Function to extract plain text from HTML content
@@ -130,16 +133,55 @@
 
 
 
-import React from 'react';
-import { Card, Text } from '@mantine/core';
+// import React from 'react';
+// import { Card, Text } from '@mantine/core';
 
-const FlashcardCard = ({ flashcard }) => {
+// const FlashcardCard = ({ flashcard }) => {
+//     return (
+//         <Card shadow="sm" padding="lg" style={{ marginBottom: '10px' }}>
+//             <Text weight={500} size="lg" style={{ marginBottom: '5px' }}>Q:  bhgi</Text>
+//             <Text color="dimmed">A: vuvuyv</Text>
+//         </Card>
+//     );
+// };
+
+// export default FlashcardCard;
+
+
+
+
+
+
+
+
+import React, { useEffect } from 'react';
+
+const TestScreen = () => {
+    // Sample HTML content to test
+    const sampleHtmlContent = `<p>to <strong>ensure </strong>proper <em>spacing </em>and <u>handling </u>of list <mark>items</mark>. <code>Here’s </code>an updated version <span data-latex="E=mc^2" data-evaluate="no" data-display="no" data-type="inlineMath">$E=mc^2$</span>.</p>`;
+
+    // Function to convert HTML to plain text
+    function htmlToPlainText(html) {
+        const tempElement = document.createElement("div");
+        tempElement.innerHTML = html;
+        let plainText = tempElement.textContent || tempElement.innerText || "";
+        plainText = plainText.replace(/\$/g, "");
+        return plainText.trim();
+    }
+
+    useEffect(() => {
+        // Convert HTML to plain text and log the result
+        const plainText = htmlToPlainText(sampleHtmlContent);
+        console.log("Converted plain text:", plainText);
+    }, [sampleHtmlContent]);
+
     return (
-        <Card shadow="sm" padding="lg" style={{ marginBottom: '10px' }}>
-            <Text weight={500} size="lg" style={{ marginBottom: '5px' }}>Q:  bhgi</Text>
-            <Text color="dimmed">A: vuvuyv</Text>
-        </Card>
+        <div>
+            <h1>Test Screen</h1>
+            <p>Check the console to see the plain text output of the HTML conversion.</p>
+        </div>
     );
 };
 
-export default FlashcardCard;
+export default TestScreen;
+

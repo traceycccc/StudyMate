@@ -1650,6 +1650,7 @@ const DocuNote = () => {
                     createdAt: new Date(),
                     userId: auth.currentUser?.uid,
                     completed: false,
+                    rating: null,
                 };
 
                 return addDoc(collection(firestore, 'flashcards'), flashcardData);

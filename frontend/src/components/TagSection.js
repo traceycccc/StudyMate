@@ -1640,7 +1640,7 @@
 
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Card, ActionIcon, Menu, Collapse, Progress, Modal, TextInput, ColorInput, Button, Group } from '@mantine/core';
+import { Card, ActionIcon, Menu, Progress, Modal, TextInput, ColorInput, Button, Group } from '@mantine/core';
 import { IconDots, IconChevronDown, IconChevronRight } from '@tabler/icons-react';
 import FlashcardCard from './FlashcardCard';
 import FlashcardTextEditor from './FlashcardTextEditor';
@@ -1776,6 +1776,7 @@ const TagSection = ({ tag, flashcards, onEditTag, allTags }) => {
             completed: false,
             createdAt: new Date(),
             userId,
+            rating: null,
         };
 
         try {
