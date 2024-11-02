@@ -1480,7 +1480,7 @@ const App = () => {
                 path="/*"
                 element={
                   emailVerified ? (
-                    <AppLayout theme={theme} setTheme={setTheme} />
+                    <AppLayout user={user} theme={theme} setTheme={setTheme} /> //user state extra layer of protection, prevent access to protected pages when user is null 
                   ) : (
                     <div>
                       <h2>Please verify your email before accessing the app.</h2>

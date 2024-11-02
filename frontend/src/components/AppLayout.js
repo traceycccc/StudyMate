@@ -692,7 +692,7 @@
 
 //fix the nav bar to dissapear in the test session page
 import React from 'react';
-import { Routes, Route, Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Outlet, useNavigate, useLocation , Navigate} from 'react-router-dom';
 import { NavbarMinimal } from './NavbarMinimal';
 
 import Home from '../screens/Home';
@@ -714,10 +714,15 @@ import TestScreen from '../screens/TestScreen';
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebase';
 
-const AppLayout = ({ theme, setTheme }) => {
+const AppLayout = ({ user, theme, setTheme }) => {
 
     const navigate = useNavigate(); // Initialize navigate
-     const location = useLocation(); // Get the current path
+    const location = useLocation(); // Get the current path
+
+    // Redirect to login if user is not authenticated
+    if (!user) {
+        return <Navigate to="/login" replace />;
+    }
 
     // Logout function to handle sign out and redirection
     const handleLogout = () => {
