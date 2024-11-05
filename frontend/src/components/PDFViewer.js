@@ -16,19 +16,22 @@ const PDFViewer = ({ pdfUrl }) => {
                     <div
                         className="rpv-core__viewer"
                         style={{
-                            border: '1px solid rgba(0, 0, 0, 0.3)',
+
+                            borderRadius: '8px',
                             display: 'flex',
                             flexDirection: 'column',
                             height: '100%',
+
                         }}
                     >
                         <div
                             style={{
                                 alignItems: 'center',
-                                backgroundColor: '#eeeeee',
-                                borderBottom: '1px solid rgba(0, 0, 0, 0.1)',
+                                backgroundColor: '#E3EEFA',
+                                borderBottom: '1px solid #b5d3f0',
                                 display: 'flex',
                                 padding: '4px',
+                                
                             }}
                         >
                             <Toolbar>
@@ -103,6 +106,10 @@ const styles = {
         marginBottom: '20px',
         height: '80vh', // Adjust this to control the height of the viewer
         overflow: 'hidden', // Hide overflow at container level
+        backgroundColor: '#FFFFFF',
+        borderRadius: '8px',
+        border: '2px solid #91bfea',
+        
     },
 };
 

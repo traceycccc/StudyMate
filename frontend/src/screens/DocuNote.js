@@ -1492,7 +1492,8 @@ import PDFViewer from '../components/PDFViewer';
 import { doc, getDoc, collection, getDocs, addDoc } from 'firebase/firestore';
 import { firestore, auth } from '../firebase';
 import RichTextEditor from '../components/RichTextEditor';
-import { Container, Grid, Button, Group, Modal, TextInput } from '@mantine/core';
+import { Container, Button, Modal, TextInput, Text } from '@mantine/core';
+import { IconArrowLeft } from '@tabler/icons-react';
 import axios from 'axios';
 
 const DocuNote = () => {
@@ -1505,6 +1506,7 @@ const DocuNote = () => {
     const [pdfReady, setPdfReady] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const [qaModalOpen, setQaModalOpen] = useState(false);
+    const [error, setError] = useState(''); // State to store validation error
     const [userPrompt, setUserPrompt] = useState('');
     const editorRef = useRef();
     const [newTagNameError, setNewTagNameError] = useState('');
@@ -1651,6 +1653,7 @@ const DocuNote = () => {
                     userId: auth.currentUser?.uid,
                     completed: false,
                     rating: null,
+                    moduleId:moduleId,
                 };
 
                 return addDoc(collection(firestore, 'flashcards'), flashcardData);
@@ -1784,14 +1787,71 @@ const DocuNote = () => {
     if (!note) return <div>Note not found</div>;
 
     return (
-        <Container fluid style={{ padding: '20px' }}>
+        <Container fluid style={{ padding: '0px 20px 20px 20px' }}>
             {/* <Button variant="subtle" onClick={() => navigate(`/modules/${moduleId}/overview`)}>
                 ← Back
             </Button> */}
-            <Button variant="subtle" onClick={() => navigate(-1)}>
+            {/* <Button variant="subtle" onClick={() => navigate(-1)}>
                 ← Back
-            </Button>
-            <Grid style={{ height: '90vh' }}>
+            </Button> */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '20px' }}>
+                <button
+                    onClick={() => navigate(-1)}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        backgroundColor: 'transparent',
+                        border: 'none',
+                        color: '#007bff', // Customize the color
+                        cursor: 'pointer',
+                        fontSize: '16px',
+                        fontWeight: 'bold',
+                        padding: '8px 8px 8px 0px',
+                        borderRadius: '25px',
+                        transition: 'background-color 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#e7f1ff'} // Hover effect
+                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                >
+                    <IconArrowLeft size={18} style={{ marginRight: '6px', backgroundColor: 'transparent' }} />
+                    Back
+                </button>
+
+                <h1 style={{ margin: 0, fontWeight: 'bold', flex: 1 }}>
+                    {note ? note.name : 'Loading...'}
+                </h1>
+
+                <Button
+                    onClick={handleSummarizePdf}
+                    loading={isProcessing}
+                    disabled={isProcessing}
+                >
+                    Explain Code
+                </Button>
+                <Button
+                    onClick={handleKeyConcepts}
+                    loading={isProcessing}
+                    disabled={isProcessing}
+                >
+                    Extract Key Concepts
+                </Button>
+                <Button
+                    onClick={() => setQaModalOpen(true)}
+                    loading={isProcessing}
+                    disabled={isProcessing}
+                >
+                    Contextual Q&A
+                </Button>
+                <Button
+                    onClick={handleOpenFlashcardModal}  // Open flashcard modal on click
+                    loading={isProcessing}
+                    disabled={isProcessing}
+                >
+                    Generate Flashcards
+                </Button>
+            </div>
+            
+            {/* <Grid style={{ height: '90vh' }}>
                 <Grid.Col span={6} style={{ overflow: 'hidden' }}>
                     {pdfReady ? (
                         <PDFViewer pdfUrl={pdfUrl} />
@@ -1800,41 +1860,30 @@ const DocuNote = () => {
                     )}
                 </Grid.Col>
                 <Grid.Col span={6} style={{ overflowY: 'auto', paddingLeft: '20px' }}>
-                    <Group style={{ marginBottom: '10px' }}>
-                        <Button
-                            onClick={handleSummarizePdf}
-                            loading={isProcessing}
-                            disabled={isProcessing}
-                        >
-                            Summarize PDF
-                        </Button>
-                        <Button
-                            onClick={handleKeyConcepts}
-                            loading={isProcessing}
-                            disabled={isProcessing}
-                        >
-                            Extract Key Concepts
-                        </Button>
-                        <Button
-                            onClick={() => setQaModalOpen(true)}
-                            loading={isProcessing}
-                            disabled={isProcessing}
-                        >
-                            Contextual Q&A
-                        </Button>
-                        <Button
-                            onClick={handleOpenFlashcardModal}  // Open flashcard modal on click
-                            loading={isProcessing}
-                            disabled={isProcessing}
-                        >
-                            Generate Flashcards
-                        </Button>
-                    </Group>
+                    
                     <RichTextEditor ref={editorRef} noteId={noteId} />
                 </Grid.Col>
-            </Grid>
+            </Grid> */}
+            <div style={{ display: 'flex', gap: '20px' }}>
 
-            {/* Modal for user input for Contextual Q&A */}
+                {/* Code Viewer Section */}
+                <div style={{ flex: 1, height: '80vh', overflowY: 'hidden', borderRadius: '8px', backgroundColor: '#F8F8FF' }}>
+
+                    {pdfReady ? (
+                        <PDFViewer pdfUrl={pdfUrl} />
+                    ) : (
+                        <p>Loading PDF...</p>
+                    )}
+                </div>
+
+                {/* Rich Text Editor Section */}
+                <div style={{ flex: 1, height: '80vh', overflowY: 'hidden' }}>
+
+                    <RichTextEditor ref={editorRef} noteId={noteId} />
+                    
+                </div>
+            </div>
+
             <Modal
                 opened={qaModalOpen}
                 onClose={() => setQaModalOpen(false)}
@@ -1842,13 +1891,29 @@ const DocuNote = () => {
             >
                 <TextInput
                     value={userPrompt}
-                    onChange={(event) => setUserPrompt(event.currentTarget.value)}
+                    onChange={(event) => {
+                        setUserPrompt(event.currentTarget.value);
+                        if (event.currentTarget.value.trim()) {
+                            setError(''); // Clear error if user starts typing
+                        }
+                    }}
                     placeholder="Ask a question about the PDF content"
+                    error={error} // Display error state in TextInput
                 />
-                <Button onClick={handleContextualQA} disabled={isProcessing}>
+                {error && (
+                    <Text color="red" size="sm" style={{ marginTop: '5px' }}>
+                        {error}
+                    </Text>
+                )}
+                <Button
+                    onClick={handleContextualQA}
+                    disabled={isProcessing || !userPrompt.trim()} // Disable if processing or input is empty
+                    style={{ marginTop: '10px' }}
+                >
                     Submit
                 </Button>
             </Modal>
+
 
             {/* Modal for generating flashcards */}
             <Modal

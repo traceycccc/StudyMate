@@ -3844,7 +3844,7 @@ const RichTextEditor = forwardRef(({ noteId }, ref) => {
 
 
     return (
-        <div style={{ border: '1px solid #d1d1d1', borderRadius: '8px', padding: '10px' }}>
+        <div style={{ border: '2px solid #91bfea', borderRadius: '8px', padding: '10px', backgroundColor: '#fff', }}>
             <Group spacing="xs" position="left" mb="md" style={{ borderBottom: '1px solid #e0e0e0', paddingBottom: '10px' }}>
                 <div className="toolbar">
                     
@@ -4172,6 +4172,9 @@ const RichTextEditor = forwardRef(({ noteId }, ref) => {
                     lineHeight: '1.5',
                     outline: 'none',
                     boxShadow: 'none',
+                    // height: '406px',  // Set a fixed height for scrollable content
+                    height: 'calc(100vh - 30px)',
+                    overflowY: 'auto',  // Enable vertical scrolling
                 }}
             />
         </div>

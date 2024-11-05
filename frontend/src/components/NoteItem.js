@@ -509,7 +509,7 @@ const NoteItem = ({ note, onEdit, onDelete, sections = [] }) => {
                 borderRadius: '10px',
                 padding: '5px',
                 cursor: 'pointer',
-                backgroundColor: '#e0f0f0'
+                backgroundColor: '#E3EEFA'
             }}
         >
             {/* Left Section: Clickable note area */}
@@ -520,10 +520,11 @@ const NoteItem = ({ note, onEdit, onDelete, sections = [] }) => {
                     alignItems: 'center',
                     flexGrow: 1, // Takes up the available space on the left
                     padding: '5px',
+                    paddingLeft: '15px',
                 }}
             >
                 {getNoteIcon(note.type)}
-                <div style={{ marginLeft: '10px' }}>
+                <div style={{ marginLeft: '20px' }}>
                     <h4 style={{ margin: '0' }}>{note.name}</h4>
                     <small>{note.createdAt.toDate().toLocaleString()}</small>
                 </div>
@@ -533,7 +534,17 @@ const NoteItem = ({ note, onEdit, onDelete, sections = [] }) => {
             <div style={{ marginLeft: '10px' }}>
                 <Menu position="bottom-end">
                     <Menu.Target>
-                        <ActionIcon onClick={(e) => e.stopPropagation() /* Prevent note click on menu click */}>
+                        <ActionIcon onClick={(e) => e.stopPropagation()}
+                            style={{
+                                backgroundColor: 'transparent', // Set the default background color of the button
+                                color: 'black', // Default color of the icon
+                                transition: 'background-color 0.3s ease', // Smooth transition for hover
+                                marginRight: '10px'
+                            }}
+                            radius="xl"
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#B3D8FD')} // Hover color
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')} // Original color when not hovered
+                        >
                             <IconDots />
                         </ActionIcon>
                     </Menu.Target>

@@ -2024,10 +2024,237 @@
 
 
 //fix scerietyt shet like which module
+// import React, { useState, useEffect } from 'react';
+// import { Button, Modal, TextInput, ColorInput, Title } from '@mantine/core';
+// import { auth, firestore } from '../firebase';
+// import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, where, orderBy } from 'firebase/firestore';
+// import ModuleCard from '../components/ModuleCard';
+// import { useNavigate } from 'react-router-dom';
+
+// const Modules = () => {
+//     const [modules, setModules] = useState({ favoriteModules: [], nonFavoriteModules: [] });
+//     const [newModuleName, setNewModuleName] = useState('');
+//     const [newModuleColor, setNewModuleColor] = useState('#FFFFFF');
+//     const [isModalOpen, setIsModalOpen] = useState(false);
+//     const [editingModule, setEditingModule] = useState(null);
+//     const [error, setError] = useState(''); // For validation errors
+
+//     const userId = auth.currentUser?.uid;
+//     const navigate = useNavigate(); // Initialize navigate
+
+//     useEffect(() => {
+//         if (userId) {
+//             const q = query(collection(firestore, 'modules'), where('userId', '==', userId), orderBy('createdAt', 'desc'));
+//             const unsubscribe = onSnapshot(q, (snapshot) => {
+//                 const modulesData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
+//                 const favoriteModules = modulesData.filter((module) => module.favorite);
+//                 const nonFavoriteModules = modulesData.filter((module) => !module.favorite);
+
+//                 setModules({ favoriteModules, nonFavoriteModules });
+//             });
+//             return () => unsubscribe();
+//         }
+//     }, [userId]);
+
+//     // Validate module name uniqueness for creation
+//     const handleAddModule = async () => {
+        
+//         if (!newModuleName.trim()) {
+//             setError('Module name cannot be empty.');
+//             return;
+//         }
+
+//         const moduleNames = [...modules.favoriteModules, ...modules.nonFavoriteModules].map((mod) => mod.name.toLowerCase());
+
+//         if (moduleNames.includes(newModuleName.toLowerCase())) {
+//             setError('Module name already exists. Please choose a unique name.');
+//             return;
+//         }
+
+//         await addDoc(collection(firestore, 'modules'), {
+//             name: newModuleName,
+//             color: newModuleColor,
+//             userId,
+//             createdAt: new Date(),
+//             favorite: false,
+//         });
+
+//         // Clear input fields after successful addition
+//         setNewModuleName('');
+//         setNewModuleColor('#FFFFFF');
+//         setIsModalOpen(false);
+//         setError(''); // Clear error after successful addition
+//     };
+
+//     // Validate module name uniqueness for editing
+//     const handleEditModule = async (module) => {
+        
+//         if (!editingModule.name.trim()) {
+//             setError('Module name cannot be empty.');
+//             return;
+//         }
+        
+
+//         const moduleNames = [...modules.favoriteModules, ...modules.nonFavoriteModules]
+//             .filter((mod) => mod.id !== module.id)
+//             .map((mod) => mod.name.toLowerCase());
+
+//         if (moduleNames.includes(editingModule.name.toLowerCase())) {
+//             setError('Module name already exists. Please choose a unique name.');
+//             return;
+//         }
+
+//         const moduleRef = doc(firestore, 'modules', module.id);
+//         await updateDoc(moduleRef, { name: editingModule.name, color: editingModule.color });
+//         setEditingModule(null);
+//         setError(''); // Clear error after successful edit
+//     };
+
+//     const handleToggleFavorite = async (moduleId, isFavorite) => {
+//         const moduleRef = doc(firestore, 'modules', moduleId);
+//         await updateDoc(moduleRef, { favorite: !isFavorite });
+//     };
+
+//     const handleDeleteModule = async (moduleId) => {
+//         const confirmDelete = window.confirm('Are you sure you want to delete this module?');
+//         if (confirmDelete) {
+//             await deleteDoc(doc(firestore, 'modules', moduleId));
+//         }
+//     };
+
+//     const handleModuleClick = (module) => {
+//         // Navigate to the module overview page using the correct path
+//         navigate(`/modules/${module.id}/overview`, { state: { moduleName: module.name } });
+//     };
+
+
+//     return (
+//         // <div style={{ padding: '10px' }}>
+//         <div>
+//             <Title
+//                 order={1}
+//                 style={{ marginTop: '0px', marginBottom: '20px' }}
+//             >
+//                 Modules
+//             </Title>
+//             <Button onClick={() => {
+//                 setIsModalOpen(true);
+//                 setNewModuleName(''); // Clear module name when opening modal
+//                 setNewModuleColor('#FFFFFF'); // Reset color to default when opening modal
+//                 setError(''); // Clear error when opening the "Add New Module" modal
+//             }}>
+//                 + New Module
+//             </Button>
+
+//             {/* Favorite Modules Section */}
+//             {modules.favoriteModules.length > 0 && (
+//                 <>
+//                     <h2>Favorites</h2>
+//                     <div style={{ display: 'flex', gap: '20px', marginTop: '20px', flexWrap: 'wrap' }}>
+//                         {modules.favoriteModules.map((module) => (
+//                             <ModuleCard
+//                                 key={module.id}
+//                                 module={module}
+//                                 onToggleFavorite={handleToggleFavorite}
+//                                 onEditModule={(module) => {
+//                                     setEditingModule(module);
+//                                     setError(''); // Clear error when opening the "Edit Module" modal
+//                                 }}
+//                                 onDeleteModule={handleDeleteModule}
+//                                 onModuleClick={handleModuleClick}
+//                             />
+//                         ))}
+//                     </div>
+//                 </>
+//             )}
+
+//             {/* Non-Favorite Modules Section */}
+//             <h2>All Modules</h2>
+//             <div style={{ display: 'flex', gap: '20px', marginTop: '20px', flexWrap: 'wrap' }}>
+//                 {modules.nonFavoriteModules.map((module) => (
+//                     <ModuleCard
+//                         key={module.id}
+//                         module={module}
+//                         onToggleFavorite={handleToggleFavorite}
+//                         onEditModule={(module) => {
+//                             setEditingModule(module);
+//                             setError(''); // Clear error when opening the "Edit Module" modal
+//                         }}
+//                         onDeleteModule={handleDeleteModule}
+//                         onModuleClick={handleModuleClick}
+//                     />
+//                 ))}
+//             </div>
+
+//             {/* Add New Module Modal */}
+//             <Modal opened={isModalOpen} onClose={() => {
+//                 setIsModalOpen(false);
+//                 setNewModuleName(''); // Clear module name when closing modal
+//                 setNewModuleColor('#FFFFFF'); // Reset color to default when closing modal
+//                 setError(''); // Clear error when closing the "Add New Module" modal
+//             }} title="Add New Module">
+//                 <TextInput
+//                     label="Module Name"
+//                     placeholder="Enter module name"
+//                     value={newModuleName}
+//                     onChange={(e) => {
+//                         setNewModuleName(e.currentTarget.value);
+//                         setError(''); // Clear error when typing
+//                     }}
+//                     error={error} // Display error under the input field
+//                 />
+//                 <ColorInput
+//                     label="Module Color"
+//                     value={newModuleColor}
+//                     onChange={setNewModuleColor}
+//                     placeholder="Choose color or enter hex code"
+//                 />
+//                 <Button onClick={handleAddModule} style={{ marginTop: '10px' }}>
+//                     Add Module
+//                 </Button>
+//             </Modal>
+
+//             {/* Edit Module Modal */}
+//             {editingModule && (
+//                 <Modal opened={!!editingModule} onClose={() => {
+//                     setEditingModule(null);
+//                     setError(''); // Clear error when closing the "Edit Module" modal
+//                 }} title="Edit Module">
+//                     <TextInput
+//                         label="Module Name"
+//                         value={editingModule.name}
+//                         onChange={(e) => {
+//                             setEditingModule({ ...editingModule, name: e.currentTarget.value });
+//                             setError(''); // Clear error when typing
+//                         }}
+//                         error={error} // Display error under the input field
+//                     />
+//                     <ColorInput
+//                         label="Module Color"
+//                         value={editingModule.color}
+//                         onChange={(color) => setEditingModule({ ...editingModule, color })}
+//                     />
+//                     <Button onClick={() => handleEditModule(editingModule)} style={{ marginTop: '10px' }}>
+//                         Save Changes
+//                     </Button>
+//                 </Modal>
+//             )}
+//         </div>
+//     );
+// };
+
+// export default Modules;
+
+
+
+//going to delete everything of the module , when deleting the module
 import React, { useState, useEffect } from 'react';
-import { Button, Modal, TextInput, ColorInput } from '@mantine/core';
-import { auth, firestore } from '../firebase';
-import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, where, orderBy } from 'firebase/firestore';
+import { Button, Modal, TextInput, ColorInput, Title } from '@mantine/core';
+import { auth, firestore, storage } from '../firebase';
+import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, where, orderBy, getDocs } from 'firebase/firestore';
+import { deleteImageFromFirebase } from '../utils/uploadImage';
+import { ref, deleteObject } from 'firebase/storage';
 import ModuleCard from '../components/ModuleCard';
 import { useNavigate } from 'react-router-dom';
 
@@ -2059,7 +2286,7 @@ const Modules = () => {
 
     // Validate module name uniqueness for creation
     const handleAddModule = async () => {
-        
+
         if (!newModuleName.trim()) {
             setError('Module name cannot be empty.');
             return;
@@ -2089,12 +2316,12 @@ const Modules = () => {
 
     // Validate module name uniqueness for editing
     const handleEditModule = async (module) => {
-        
+
         if (!editingModule.name.trim()) {
             setError('Module name cannot be empty.');
             return;
         }
-        
+
 
         const moduleNames = [...modules.favoriteModules, ...modules.nonFavoriteModules]
             .filter((mod) => mod.id !== module.id)
@@ -2116,10 +2343,74 @@ const Modules = () => {
         await updateDoc(moduleRef, { favorite: !isFavorite });
     };
 
+    // const handleDeleteModule = async (moduleId) => {
+    //     const confirmDelete = window.confirm('Are you sure you want to delete this module?');
+    //     if (confirmDelete) {
+    //         await deleteDoc(doc(firestore, 'modules', moduleId));
+    //     }
+    // };
+
     const handleDeleteModule = async (moduleId) => {
-        const confirmDelete = window.confirm('Are you sure you want to delete this module?');
-        if (confirmDelete) {
+        const confirmDelete = window.confirm('Are you sure you want to delete this module and all associated data?');
+        if (!confirmDelete) return;
+
+        try {
+            // 1. Delete sections related to the module
+            const sectionsQuery = query(collection(firestore, 'sections'), where('moduleId', '==', moduleId));
+            const sectionsSnapshot = await getDocs(sectionsQuery);
+
+            const sectionDeletePromises = sectionsSnapshot.docs.map((sectionDoc) => deleteDoc(sectionDoc.ref));
+            await Promise.all(sectionDeletePromises);
+
+            // 2. Delete tags related to the module
+            const tagsQuery = query(collection(firestore, 'tags'), where('moduleId', '==', moduleId));
+            const tagsSnapshot = await getDocs(tagsQuery);
+
+            const tagDeletePromises = tagsSnapshot.docs.map((tagDoc) => deleteDoc(tagDoc.ref));
+            await Promise.all(tagDeletePromises);
+
+            // 3. Delete flashcards related to each tag of the module
+            const flashcardsQuery = query(collection(firestore, 'flashcards'), where('moduleId', '==', moduleId));
+            const flashcardsSnapshot = await getDocs(flashcardsQuery);
+
+            const flashcardDeletePromises = flashcardsSnapshot.docs.map((flashcardDoc) => deleteDoc(flashcardDoc.ref));
+            await Promise.all(flashcardDeletePromises);
+
+            // 4. Delete notes and their associated files in storage
+            const notesQuery = query(collection(firestore, 'notes'), where('moduleId', '==', moduleId));
+            const notesSnapshot = await getDocs(notesQuery);
+
+            const noteDeletePromises = notesSnapshot.docs.map(async (noteDoc) => {
+                const noteData = noteDoc.data();
+
+                const fileDeletePromises = [];
+
+                // Delete images from content's 'src' attributes
+                if (noteData.content && noteData.content.content) {
+                    noteData.content.content.forEach((node) => {
+                        if (node.type === 'image' && node.attrs && node.attrs.src) {
+                            fileDeletePromises.push(deleteImageFromFirebase(node.attrs.src));
+                        }
+                    });
+                }
+
+                // Delete any document or code file in 'fileURL'
+                if (noteData.fileURL) {
+                    const fileRef = ref(storage, noteData.fileURL);
+                    fileDeletePromises.push(deleteObject(fileRef));
+                }
+
+                await Promise.all(fileDeletePromises);
+                return deleteDoc(noteDoc.ref);
+            });
+
+            await Promise.all(noteDeletePromises);
+
+            // 5. Finally, delete the module itself
             await deleteDoc(doc(firestore, 'modules', moduleId));
+            console.log(`Module ${moduleId} and all associated data deleted successfully.`);
+        } catch (error) {
+            console.error('Error deleting module and associated data:', error);
         }
     };
 
@@ -2130,8 +2421,14 @@ const Modules = () => {
 
 
     return (
-        <div style={{ padding: '10px' }}>
-            <h1>Modules</h1>
+        // <div style={{ padding: '10px' }}>
+        <div>
+            <Title
+                order={1}
+                style={{ marginTop: '0px', marginBottom: '20px' }}
+            >
+                Modules
+            </Title>
             <Button onClick={() => {
                 setIsModalOpen(true);
                 setNewModuleName(''); // Clear module name when opening modal

@@ -100,7 +100,8 @@ const ModuleCard = ({ module, onToggleFavorite, onEditModule, onDeleteModule, on
 
     return (
         <Card
-            style={{ width: '260px', position: 'relative', borderRadius: '8px', border: '1px solid #ccc', padding: '0px' }}
+            // style={{ width: '260px', position: 'relative', borderRadius: '8px', border: '1px solid #000000', padding: '0px' }}
+            style={{ width: '260px', position: 'relative', borderRadius: '8px', border: '2px solid #91bfea', padding: '0px' }}
         >
             {/* Top Container (clickable) */}
             <div
@@ -131,7 +132,7 @@ const ModuleCard = ({ module, onToggleFavorite, onEditModule, onDeleteModule, on
                     display: 'flex',
                     justifyContent: 'flex-end',
                     alignItems: 'center',
-                    borderTop: '1px solid #ccc',
+                    borderTop: '2px solid #91bfea',
                 }}
             >
                 {/* Flashcards Icon */}

@@ -691,15 +691,260 @@
 
 
 //fix the nav bar to dissapear in the test session page
+// import React from 'react';
+// import { Routes, Route, Outlet, useNavigate, useLocation , Navigate} from 'react-router-dom';
+// import { NavbarMinimal } from './NavbarMinimal';
+
+// import Home from '../screens/Home';
+// import Modules from '../screens/Modules';
+// import ModuleOverview from '../screens/ModuleOverview';
+
+// import Flashcards from '../screens/Flashcards';
+// import TestSession from '../screens/TestSession'; // Import TestSession component
+
+// import PlainNote from '../screens/PlainNote'; // Import the PlainNote component
+// import CodeNote from '../screens/CodeNote';
+// import DocuNote from '../screens/DocuNote';
+
+// import Tasks from '../screens/Tasks';
+// import Settings from '../screens/Settings';
+// import TestScreen from '../screens/TestScreen';
+
+
+// import { signOut } from 'firebase/auth';
+// import { auth } from '../firebase';
+
+// const AppLayout = ({ user, theme, setTheme }) => {
+
+//     const navigate = useNavigate(); // Initialize navigate
+//     const location = useLocation(); // Get the current path
+
+//     // Redirect to login if user is not authenticated
+//     if (!user) {
+//         return <Navigate to="/login" replace />;
+//     }
+
+//     // Logout function to handle sign out and redirection
+//     const handleLogout = () => {
+//         signOut(auth)
+//             .then(() => {
+//                 console.log('User signed out');
+//                 navigate('/login', { replace: true }); // Redirect to login page after logout
+//             })
+//             .catch((error) => {
+//                 console.error('Error logging out:', error);
+//             });
+//     };
+
+
+
+//     return (
+//         <div style={{ display: 'flex' }}>
+//             {/* Navbar remains consistent */}
+//             {/* Conditionally hide the Navbar */}
+//             <div
+//                 style={{
+//                     visibility: location.pathname === '/test-session' ? 'hidden' : 'visible',
+//                     width: location.pathname === '/test-session' ? '0' : 'auto',
+                   
+//                 }}
+//             >
+//                 <NavbarMinimal onLogout={handleLogout} theme={theme} setTheme={setTheme} />
+//             </div>
+
+//             <div
+//                 style={{
+//                     flexGrow: 1,             // Expand the content area
+//                     marginLeft: location.pathname === '/test-session' ? '0' : '30px', // Adjust margin based on Navbar visibility
+//                     overflowY: 'auto',        // Vertical scrolling
+//                     overflowX: 'hidden',      // Disable horizontal scrolling
+//                     height: '100vh',          // Fixed height for the content area
+//                     width: '100%',            // Full width for the content area
+//                     boxSizing: 'border-box',  // Ensure padding doesn't affect width calculation
+//                 }}
+//             >
+//                 {/* Content area that dynamically changes based on the route */}
+//                 <Routes>
+//                     <Route path="/home" element={<Home />} />
+//                     <Route path="/modules" element={<Modules />} />
+//                     <Route path="/modules/:id/overview" element={<ModuleOverview />} />
+
+//                     <Route path="/modules/:moduleId/overview/flashcards" element={<Flashcards />} />
+//                     <Route path="/test-session" element={<TestSession />} />
+
+
+//                     {/* Note Page with Secondary Nav
+//                     <Route path="/modules/:id/note/:noteId" element={<NotePage />} /> */}
+//                     {/* Plain Note Route */}
+//                     <Route path="/modules/:moduleId/overview/sections/:sectionId/notes/:noteId" element={<PlainNote />} />
+
+//                     {/* Route for Code Notes */}
+//                     <Route path="/modules/:moduleId/overview/sections/:sectionId/code-notes/:noteId" element={<CodeNote />} />
+
+//                     <Route path="/modules/:moduleId/overview/sections/:sectionId/docu-notes/:noteId" element={<DocuNote />} />
+
+
+
+
+
+//                     <Route path="/tasks" element={<Tasks />} />
+//                     <Route path="/settings" element={<Settings />} />
+
+
+//                     <Route path="/test" element={<TestScreen />} />
+
+
+
+
+//                 </Routes>
+
+//                 <Outlet />
+//             </div>
+//         </div>
+
+//     );
+// };
+
+// export default AppLayout;
+
+
+
+//add flashcard practice, also want to hide nav bar
+// import React from 'react';
+// import { Routes, Route, Outlet, useNavigate, useLocation, Navigate } from 'react-router-dom';
+// import { NavbarMinimal } from './NavbarMinimal';
+
+// import Home from '../screens/Home';
+// import Modules from '../screens/Modules';
+// import ModuleOverview from '../screens/ModuleOverview';
+
+// import Flashcards from '../screens/Flashcards';
+// import FlashcardPractice from '../screens/FlashcardPractice';
+// import TestSession from '../screens/TestSession'; // Import TestSession component
+
+// import PlainNote from '../screens/PlainNote'; // Import the PlainNote component
+// import CodeNote from '../screens/CodeNote';
+// import DocuNote from '../screens/DocuNote';
+
+// import Tasks from '../screens/Tasks';
+// import Settings from '../screens/Settings';
+// import TestScreen from '../screens/TestScreen';
+
+
+// import { signOut } from 'firebase/auth';
+// import { auth } from '../firebase';
+
+// const AppLayout = ({ user, theme, setTheme }) => {
+
+//     const navigate = useNavigate(); // Initialize navigate
+//     const location = useLocation(); // Get the current path
+
+//     // Redirect to login if user is not authenticated
+//     if (!user) {
+//         return <Navigate to="/login" replace />;
+//     }
+
+//     // Logout function to handle sign out and redirection
+//     const handleLogout = () => {
+//         signOut(auth)
+//             .then(() => {
+//                 console.log('User signed out');
+//                 navigate('/login', { replace: true }); // Redirect to login page after logout
+//             })
+//             .catch((error) => {
+//                 console.error('Error logging out:', error);
+//             });
+//     };
+
+//     const shouldHideNavbar = location.pathname.includes('/test-session') || location.pathname.includes('/practice-flashcard');
+
+//     return (
+//         <div style={{ display: 'flex' }}>
+//             {/* Conditionally hide the Navbar */}
+//             <div
+//                 // style={{
+//                 //     visibility: location.pathname === '/test-session' ? 'hidden' : 'visible',
+//                 //     width: location.pathname === '/test-session' ? '0' : 'auto',
+
+//                 // }}
+//                 style={{
+//                     visibility: shouldHideNavbar ? 'hidden' : 'visible',
+//                     width: shouldHideNavbar ? '0' : 'auto',
+//                 }}
+
+//             >
+//                 <NavbarMinimal onLogout={handleLogout} theme={theme} setTheme={setTheme} />
+//             </div>
+
+//             <div
+//                 style={{
+//                     flexGrow: 1,             // Expand the content area
+//                     marginLeft: location.pathname === '/test-session' ? '0' : '30px', // Adjust margin based on Navbar visibility
+//                     overflowY: 'auto',        // Vertical scrolling
+//                     overflowX: 'hidden',      // Disable horizontal scrolling
+//                     height: '100vh',          // Fixed height for the content area
+//                     width: '100%',            // Full width for the content area
+//                     boxSizing: 'border-box',  // Ensure padding doesn't affect width calculation
+//                 }}
+//             >
+//                 {/* Content area that dynamically changes based on the route */}
+//                 <Routes>
+//                     <Route path="/home" element={<Home />} />
+//                     <Route path="/modules" element={<Modules />} />
+//                     <Route path="/modules/:id/overview" element={<ModuleOverview />} />
+
+//                     <Route path="/modules/:moduleId/overview/flashcards" element={<Flashcards />} />
+//                     <Route path="/test-session" element={<TestSession />} />
+//                     <Route path="/practice-flashcard/:tagId" element={<FlashcardPractice />} />
+
+
+//                     {/* Note Page with Secondary Nav
+//                     <Route path="/modules/:id/note/:noteId" element={<NotePage />} /> */}
+//                     {/* Plain Note Route */}
+//                     <Route path="/modules/:moduleId/overview/sections/:sectionId/notes/:noteId" element={<PlainNote />} />
+
+//                     {/* Route for Code Notes */}
+//                     <Route path="/modules/:moduleId/overview/sections/:sectionId/code-notes/:noteId" element={<CodeNote />} />
+
+//                     <Route path="/modules/:moduleId/overview/sections/:sectionId/docu-notes/:noteId" element={<DocuNote />} />
+
+
+
+
+
+//                     <Route path="/tasks" element={<Tasks />} />
+//                     <Route path="/settings" element={<Settings />} />
+
+
+//                     <Route path="/test" element={<TestScreen />} />
+
+
+
+
+//                 </Routes>
+
+//                 <Outlet />
+//             </div>
+//         </div>
+
+//     );
+// };
+
+// export default AppLayout;
+
+
+//fix the logout, must not be in other pages after logging out
 import React from 'react';
-import { Routes, Route, Outlet, useNavigate, useLocation , Navigate} from 'react-router-dom';
+import { Routes, Route, Outlet, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { NavbarMinimal } from './NavbarMinimal';
+import { useMantineTheme} from '@mantine/core';
 
 import Home from '../screens/Home';
 import Modules from '../screens/Modules';
 import ModuleOverview from '../screens/ModuleOverview';
 
 import Flashcards from '../screens/Flashcards';
+import FlashcardPractice from '../screens/FlashcardPractice';
 import TestSession from '../screens/TestSession'; // Import TestSession component
 
 import PlainNote from '../screens/PlainNote'; // Import the PlainNote component
@@ -718,11 +963,14 @@ const AppLayout = ({ user, theme, setTheme }) => {
 
     const navigate = useNavigate(); // Initialize navigate
     const location = useLocation(); // Get the current path
+    const mantineTheme = useMantineTheme();
 
-    // Redirect to login if user is not authenticated
-    if (!user) {
-        return <Navigate to="/login" replace />;
-    }
+    //change place
+    // // Redirect to login if user is not authenticated
+    // if (!user) {
+    //     return <Navigate to="/login" replace />;
+    // }
+
 
     // Logout function to handle sign out and redirection
     const handleLogout = () => {
@@ -736,18 +984,27 @@ const AppLayout = ({ user, theme, setTheme }) => {
             });
     };
 
+    const shouldHideNavbar = location.pathname.includes('/test-session') || location.pathname.includes('/practice-flashcard');
 
 
+    if (!user) {
+        return <Navigate to="/login" replace />;
+    }
     return (
         <div style={{ display: 'flex' }}>
-            {/* Navbar remains consistent */}
             {/* Conditionally hide the Navbar */}
             <div
+                // style={{
+                //     visibility: location.pathname === '/test-session' ? 'hidden' : 'visible',
+                //     width: location.pathname === '/test-session' ? '0' : 'auto',
+
+                // }}
                 style={{
-                    visibility: location.pathname === '/test-session' ? 'hidden' : 'visible',
-                    width: location.pathname === '/test-session' ? '0' : 'auto',
-                   
+                    visibility: shouldHideNavbar ? 'hidden' : 'visible',
+                    width: shouldHideNavbar ? '0' : 'auto',
+                    
                 }}
+
             >
                 <NavbarMinimal onLogout={handleLogout} theme={theme} setTheme={setTheme} />
             </div>
@@ -755,12 +1012,16 @@ const AppLayout = ({ user, theme, setTheme }) => {
             <div
                 style={{
                     flexGrow: 1,             // Expand the content area
-                    marginLeft: location.pathname === '/test-session' ? '0' : '30px', // Adjust margin based on Navbar visibility
+                    // margin: location.pathname === '/test-session' ? '0' : '0px 30px 0px 30px', // Adjust margin based on Navbar visibility
+                    margin: location.pathname === '/test-session' ? '0' : '0',
+                    padding: '30px',
                     overflowY: 'auto',        // Vertical scrolling
                     overflowX: 'hidden',      // Disable horizontal scrolling
                     height: '100vh',          // Fixed height for the content area
                     width: '100%',            // Full width for the content area
                     boxSizing: 'border-box',  // Ensure padding doesn't affect width calculation
+                    // backgroundColor: '#C7D8F3',
+                    background: mantineTheme.colorScheme === 'dark' ? '#5A738F' : '#C3E1FE',
                 }}
             >
                 {/* Content area that dynamically changes based on the route */}
@@ -771,6 +1032,7 @@ const AppLayout = ({ user, theme, setTheme }) => {
 
                     <Route path="/modules/:moduleId/overview/flashcards" element={<Flashcards />} />
                     <Route path="/test-session" element={<TestSession />} />
+                    <Route path="/practice-flashcard/:tagId" element={<FlashcardPractice />} />
 
 
                     {/* Note Page with Secondary Nav

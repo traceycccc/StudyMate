@@ -390,9 +390,139 @@
 
 
 
-import { useState } from 'react';
-import { Center, Tooltip, UnstyledButton, Stack, rem, useMantineTheme } from '@mantine/core';
+// import { useState } from 'react';
+// import { Center, Tooltip, UnstyledButton, Stack, rem, useMantineTheme } from '@mantine/core';
 
+// import {
+//     IconHome2,
+//     IconBook,
+//     IconChecklist,
+//     IconSettings,
+//     IconLogout,
+//     IconClipboardCheck,
+// } from '@tabler/icons-react';
+// import StudyMateLogo from '../assets/StudyMateLogo.svg';
+// import { useNavigate } from 'react-router-dom';
+// import ThemeToggle from './ThemeToggle'; // Import ThemeToggle
+
+// const NavbarLink = ({ icon: Icon, label, active, onClick }) => {
+//     return (
+//         <Tooltip label={label} position="right" transitionProps={{ duration: 0 }}>
+//             <UnstyledButton onClick={onClick} style={{ display: 'block', padding: '10px', marginBottom: '10px' }}>
+//                 <Icon style={{ width: rem(20), height: rem(20) }} stroke={1.5} color={active ? 'blue' : 'black'} />
+//             </UnstyledButton>
+//         </Tooltip>
+//     );
+// };
+
+// export const NavbarMinimal = ({ onLogout, theme, setTheme }) => {
+//     const [active, setActive] = useState('home'); // Default to 'home' page
+//     const navigate = useNavigate(); // Add useNavigate for navigation
+//     const mantineTheme = useMantineTheme();  // Access current theme
+
+//     return (
+//         <nav
+//             style={{
+//                 display: 'flex',
+//                 flexDirection: 'column',
+//                 width: '80px',
+//                 height: '100vh',
+//                 justifyContent: 'space-between',
+//                 alignItems: 'center',
+//                 background: mantineTheme.colorScheme === 'dark' ? '#333' : '#f5f5f5', // Dynamic background based on theme
+//             }}
+//         >
+//             <Center>
+//                 <img
+//                     src={StudyMateLogo}
+//                     alt="StudyMate Logo"
+//                     style={{ 
+//                         width: '30px', 
+//                         height: '30px', 
+//                         marginTop: '32px',
+//                         filter: mantineTheme.colorScheme === 'dark' ? 'invert(1)' : 'invert(0)', // Invert logo color
+//                     }}
+//                 />
+//             </Center>
+
+//             <div>
+//                 <Stack justify="center" gap={0}>
+//                     <NavbarLink
+//                         icon={IconHome2}
+//                         label="Home"
+//                         active={active === 'home'}
+//                         onClick={() => {
+//                             setActive('home');
+//                             navigate('/home');
+//                         }}
+//                         color={mantineTheme.colorScheme === 'dark' ? '#fff' : '#000'} // Dynamic icon color
+                    
+//                     />
+
+//                     <NavbarLink
+//                         icon={IconBook}
+//                         label="Modules"
+//                         active={active === 'modules'}
+//                         onClick={() => {
+//                             setActive('modules');
+//                             navigate('/modules');
+//                         }}
+//                     />
+
+//                     <NavbarLink
+//                         icon={IconChecklist}
+//                         label="Tasks"
+//                         active={active === 'tasks'}
+//                         onClick={() => {
+//                             setActive('tasks');
+//                             navigate('/tasks');
+//                         }}
+//                     />
+
+//                     <NavbarLink
+//                         icon={IconClipboardCheck}
+//                         label="Test"
+//                         active={active === 'test'}
+//                         onClick={() => {
+//                             setActive('test');
+//                             navigate('/test');
+//                         }}
+//                     />
+//                 </Stack>
+//             </div>
+
+//             <Stack justify="center" gap={0}>
+//                 {/* Settings Link */}
+//                 <NavbarLink
+//                     icon={IconSettings}
+//                     label="Settings"
+//                     active={active === 'settings'}
+//                     onClick={() => {
+//                         setActive('settings');
+//                         navigate('/settings');
+//                     }}
+//                 />
+
+//                 {/* Theme Toggle Button */}
+//                 <ThemeToggle theme={theme} setTheme={setTheme} />
+
+//                 {/* Logout Button */}
+//                 <NavbarLink
+//                     icon={IconLogout}
+//                     label="Logout"
+//                     onClick={onLogout}
+//                 />
+//             </Stack>
+//         </nav>
+//     );
+// };
+
+
+
+
+
+import { useState } from 'react';
+import { Center, Tooltip, UnstyledButton, Stack, rem, useMantineTheme, Modal, Button, Text } from '@mantine/core';
 import {
     IconHome2,
     IconBook,
@@ -400,119 +530,194 @@ import {
     IconSettings,
     IconLogout,
     IconClipboardCheck,
+    IconUserCircle,
 } from '@tabler/icons-react';
 import StudyMateLogo from '../assets/StudyMateLogo.svg';
 import { useNavigate } from 'react-router-dom';
-import ThemeToggle from './ThemeToggle'; // Import ThemeToggle
+//import ThemeToggle from './ThemeToggle';
 
-const NavbarLink = ({ icon: Icon, label, active, onClick }) => {
+// const NavbarLink = ({ icon: Icon, label, active, onClick }) => {
+//     return (
+//         <Tooltip label={label} position="right" transitionProps={{ duration: 0 }}>
+//             <UnstyledButton onClick={onClick} style={{ display: 'block', padding: '10px', marginBottom: '10px' }}>
+//                 <Icon style={{ width: rem(20), height: rem(20) }} stroke={1.5} color={active ? 'blue' : 'black'} />
+//             </UnstyledButton>
+//         </Tooltip>
+//     );
+// };
+
+
+const NavbarLink = ({ icon: Icon, image, label, active, onClick }) => {
     return (
         <Tooltip label={label} position="right" transitionProps={{ duration: 0 }}>
-            <UnstyledButton onClick={onClick} style={{ display: 'block', padding: '10px', marginBottom: '10px' }}>
-                <Icon style={{ width: rem(20), height: rem(20) }} stroke={1.5} color={active ? 'blue' : 'black'} />
+            <UnstyledButton
+                onClick={onClick}
+                style={{
+                    display: 'block',
+                    padding: '10px',
+                    marginBottom: '10px',
+                    marginTop: image ? '23px' : '0' // Adds top margin only for the logo
+                }}
+            >
+                {image ? (
+                    <img
+                        src={image}
+                        alt={label}
+                        style={{
+                            width: '38px',
+                            height: '38px',
+                        }}
+                    />
+                ) : (
+                    <Icon style={{ width: rem(24), height: rem(24) }} stroke={1.5} color={active ? 'blue' : 'black'} />
+                )}
             </UnstyledButton>
         </Tooltip>
     );
 };
 
+
+
 export const NavbarMinimal = ({ onLogout, theme, setTheme }) => {
-    const [active, setActive] = useState('home'); // Default to 'home' page
-    const navigate = useNavigate(); // Add useNavigate for navigation
-    const mantineTheme = useMantineTheme();  // Access current theme
+    const [active, setActive] = useState('home');
+    const [logoutModalOpen, setLogoutModalOpen] = useState(false); // State for modal visibility
+    const navigate = useNavigate();
+    const mantineTheme = useMantineTheme();
+
+    const handleLogout = () => {
+        setLogoutModalOpen(true); // Open modal on logout button click
+    };
+
+    const confirmLogout = () => {
+        setLogoutModalOpen(false); // Close modal
+        onLogout(); // Trigger the actual logout function
+    };
 
     return (
-        <nav
-            style={{
-                display: 'flex',
-                flexDirection: 'column',
-                width: '80px',
-                height: '100vh',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                background: mantineTheme.colorScheme === 'dark' ? '#333' : '#f5f5f5', // Dynamic background based on theme
-            }}
-        >
-            <Center>
-                <img
-                    src={StudyMateLogo}
-                    alt="StudyMate Logo"
-                    style={{ 
-                        width: '30px', 
-                        height: '30px', 
-                        marginTop: '32px',
-                        filter: mantineTheme.colorScheme === 'dark' ? 'invert(1)' : 'invert(0)', // Invert logo color
-                    }}
-                />
-            </Center>
+        <>
+            <nav
+                style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    width: '80px',
+                    height: '100vh',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    background: mantineTheme.colorScheme === 'dark' ? '#43618B' : '#A9D3FC',
+                    borderRight: '2px solid #91bfea'
 
-            <div>
-                <Stack justify="center" gap={0}>
-                    <NavbarLink
-                        icon={IconHome2}
-                        label="Home"
-                        active={active === 'home'}
-                        onClick={() => {
-                            setActive('home');
-                            navigate('/home');
+                }}
+            >
+                {/* <Center>
+                    <img
+                        src={StudyMateLogo}
+                        alt="StudyMate Logo"
+                        style={{ 
+                            width: '30px', 
+                            height: '30px', 
+                            marginTop: '36px',
+                            filter: mantineTheme.colorScheme === 'dark' ? 'invert(1)' : 'invert(0)',
                         }}
-                        color={mantineTheme.colorScheme === 'dark' ? '#fff' : '#000'} // Dynamic icon color
-                    
+                        onClick={() => {
+                            setActive('modules');
+                            navigate('/modules');
+                        }}
                     />
-
+                </Center> */}
+                <Center>
                     <NavbarLink
-                        icon={IconBook}
-                        label="Modules"
+                        image={StudyMateLogo}
+                        label="Home"
                         active={active === 'modules'}
                         onClick={() => {
                             setActive('modules');
                             navigate('/modules');
                         }}
                     />
+                </Center>
 
+                <div>
+                    <Stack justify="center" gap={0}>
+                        {/* <NavbarLink
+                            icon={IconHome2}
+                            label="Home"
+                            active={active === 'home'}
+                            onClick={() => {
+                                setActive('home');
+                                navigate('/home');
+                            }}
+                        /> */}
+
+                        {/* <NavbarLink
+                            icon={IconBook}
+                            label="Modules"
+                            active={active === 'modules'}
+                            onClick={() => {
+                                setActive('modules');
+                                navigate('/modules');
+                            }}
+                        /> */}
+
+                        {/* <NavbarLink
+                            icon={IconChecklist}
+                            label="Tasks"
+                            active={active === 'tasks'}
+                            onClick={() => {
+                                setActive('tasks');
+                                navigate('/tasks');
+                            }}
+                        />
+
+                        <NavbarLink
+                            icon={IconClipboardCheck}
+                            label="Test"
+                            active={active === 'test'}
+                            onClick={() => {
+                                setActive('test');
+                                navigate('/test');
+                            }}
+                        /> */}
+                    </Stack>
+                </div>
+
+                <Stack justify="center" gap={0}>
                     <NavbarLink
-                        icon={IconChecklist}
-                        label="Tasks"
-                        active={active === 'tasks'}
+                        icon={IconUserCircle}
+                        label="Profile"
+                        active={active === 'settings'}
                         onClick={() => {
-                            setActive('tasks');
-                            navigate('/tasks');
+                            setActive('settings');
+                            navigate('/settings');
                         }}
                     />
 
+                    {/* <ThemeToggle theme={theme} setTheme={setTheme} /> */}
+
                     <NavbarLink
-                        icon={IconClipboardCheck}
-                        label="Test"
-                        active={active === 'test'}
-                        onClick={() => {
-                            setActive('test');
-                            navigate('/test');
-                        }}
+                        icon={IconLogout}
+                        label="Logout"
+                        onClick={handleLogout} // Open confirmation modal
                     />
                 </Stack>
-            </div>
+            </nav>
 
-            <Stack justify="center" gap={0}>
-                {/* Settings Link */}
-                <NavbarLink
-                    icon={IconSettings}
-                    label="Settings"
-                    active={active === 'settings'}
-                    onClick={() => {
-                        setActive('settings');
-                        navigate('/settings');
-                    }}
-                />
-
-                {/* Theme Toggle Button */}
-                <ThemeToggle theme={theme} setTheme={setTheme} />
-
-                {/* Logout Button */}
-                <NavbarLink
-                    icon={IconLogout}
-                    label="Logout"
-                    onClick={onLogout}
-                />
-            </Stack>
-        </nav>
+            {/* Logout Confirmation Modal */}
+            <Modal
+                opened={logoutModalOpen}
+                onClose={() => setLogoutModalOpen(false)}
+                title="Confirm Logout"
+            >
+                <Text>Are you sure you want to log out?</Text>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                    <Button variant="outline" onClick={() => setLogoutModalOpen(false)} style={{ marginRight: '10px' }}>
+                        Cancel
+                    </Button>
+                    <Button color="red" onClick={confirmLogout}>
+                        Logout
+                    </Button>
+                </div>
+            </Modal>
+        </>
     );
 };
+

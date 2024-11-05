@@ -252,8 +252,9 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createUserWithEmailAndPassword, sendEmailVerification, fetchSignInMethodsForEmail } from 'firebase/auth';
-import { auth } from '../firebase';
+import { auth, firestore } from '../firebase';
 import { TextInput, PasswordInput, Button, Container, Text } from '@mantine/core';
+import { doc, setDoc } from 'firebase/firestore';
 
 const Register = () => {
     const [email, setEmail] = useState('');
@@ -326,6 +327,13 @@ const Register = () => {
             // Create the user with email and password
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
+
+            // Create a user document in Firestore
+            await setDoc(doc(firestore, 'users', user.uid), {
+                name: name,
+                email: email
+            });
+
 
             // Send email verification
             await sendEmailVerification(user);

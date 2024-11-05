@@ -328,6 +328,7 @@
 
 import React from 'react';
 import { Button, Group } from '@mantine/core';
+import { IconArrowLeft } from '@tabler/icons-react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import NoteOrganizer from '../components/NoteOrganizer'; // Import NoteOrganizer
 
@@ -340,10 +341,31 @@ const ModuleOverview = () => {
     
 
     return (
-        <div style={{ padding: '20px' }}>
-            <Button variant="subtle" onClick={() => navigate('/modules')}>
-                ← Back
-            </Button>
+        <div style={{ paddingTop: '4px' }}>
+            <button
+                onClick={() => navigate('/modules')}
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    color: '#007bff', // Customize the color
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    padding: '8px 8px 8px 0px',
+                    borderRadius: '25px',
+                    transition: 'background-color 0.2s ease',
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#e7f1ff'} // Hover effect
+                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+            >
+                <IconArrowLeft size={18} style={{ 
+                    marginRight: '6px', 
+                    backgroundColor: 'transparent' 
+                }} />
+                Back
+            </button>
 
             <h1>{moduleName}</h1>
             <Button 

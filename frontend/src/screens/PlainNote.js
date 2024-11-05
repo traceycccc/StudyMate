@@ -209,7 +209,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { firestore } from '../firebase';
 import RichTextEditor from '../components/RichTextEditor';
-import { Button } from '@mantine/core';
+//import { Button } from '@mantine/core';
+import { IconArrowLeft } from '@tabler/icons-react';
 
 const PlainNote = () => {
     const navigate = useNavigate();
@@ -268,12 +269,40 @@ const PlainNote = () => {
             {/* <Button variant="subtle" onClick={() => navigate(`/modules/${moduleId}/overview`)}>
                 ← Back
             </Button> */}
-            <Button variant="subtle" onClick={() => navigate(-1)}>
-                ← Back
-            </Button>
-            <h1>{note.name}</h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '20px' }}>
+                <button
+                    onClick={() => navigate(-1)}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        backgroundColor: 'transparent',
+                        border: 'none',
+                        color: '#007bff', // Customize the color
+                        cursor: 'pointer',
+                        fontSize: '16px',
+                        fontWeight: 'bold',
+                        padding: '8px 8px 8px 0px',
+                        borderRadius: '25px',
+                        transition: 'background-color 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#e7f1ff'} // Hover effect
+                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                >
+                    <IconArrowLeft size={18} style={{ marginRight: '6px', backgroundColor: 'transparent' }} />
+                    Back
+                </button>
+
+                <h1 style={{ margin: 0, fontWeight: 'bold', flex: 1 }}>
+                    {note ? note.name : 'Loading...'}
+                </h1>
+
+                
+            </div>
             
-            <RichTextEditor ref={editorRef} noteId={noteId} />
+            <div style={{ flex: 1, height: '90vh', }}>
+                    
+                <RichTextEditor ref={editorRef} noteId={noteId} />
+            </div>
         </div>
     );
 };
