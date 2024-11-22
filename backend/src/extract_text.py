@@ -1,4 +1,4 @@
-# #remove tesaactac
+
 from flask import Flask, request, jsonify
 import fitz  # PyMuPDF
 from pdf2image import convert_from_path
@@ -6,7 +6,7 @@ import os
 
 app = Flask(__name__)
 
-# Function to extract text from PDF using PyMuPDF and Tesseract OCR
+# Function to extract text from PDF using PyMuPDF 
 def extract_text(pdf_path):
     extracted_text = ""
     pdf_document = fitz.open(pdf_path)

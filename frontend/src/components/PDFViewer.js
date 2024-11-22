@@ -1,4 +1,3 @@
-// PDFViewer.js
 import React from 'react';
 import { Worker, Viewer } from '@react-pdf-viewer/core';
 import { toolbarPlugin } from '@react-pdf-viewer/toolbar';
@@ -104,7 +103,7 @@ const PDFViewer = ({ pdfUrl }) => {
 const styles = {
     pdfContainer: {
         marginBottom: '20px',
-        height: '80vh', // Adjust this to control the height of the viewer
+        height: '83vh', // Adjust this to control the height of the viewer
         overflow: 'hidden', // Hide overflow at container level
         backgroundColor: '#FFFFFF',
         borderRadius: '8px',
