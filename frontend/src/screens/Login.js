@@ -19,7 +19,6 @@ const Login = () => {
             .catch((err) => {
                 console.error('Login error code:', err.code);
                 console.error('Login error message:', err.message);
-                // setError(err.message);
                 setError("Invalid email or password. Please try again!");
             });
     };
@@ -36,7 +35,7 @@ const Login = () => {
                     type="email"
                     placeholder="example@gmail.com"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => setEmail(e.target.value)}//Real-Time State Update Before Submit
                     required
                     mt="sm"
                 />

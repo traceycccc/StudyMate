@@ -126,8 +126,11 @@ table {
 
 td,
 th {
-    padding: 8px;
-    border: 1px solid #ddd;
+    padding-left: 8px;
+    /* Horizontal padding on the left */
+    padding-right: 8px;
+    /* Horizontal padding on the right */
+    border: 1px solid #a7a7a7;
     position: relative;
     overflow: hidden;
 }

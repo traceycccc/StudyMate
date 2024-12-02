@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios'; // Import axios for API calls
 import { sendPasswordResetEmail } from 'firebase/auth';
-import { auth } from '../firebase';
+import { auth } from '../firebase'; //Firebase Authentication instance, gateway to manage users and their authentication-related actions
 import { TextInput, Button, Container, Text } from '@mantine/core';
 
 const ForgotPassword = () => {
@@ -16,21 +16,22 @@ const ForgotPassword = () => {
         setError(''); // Clear previous error
         setSuccessMessage(''); // Clear success message
 
-        // Define actionCodeSettings to redirect after password reset
+        //Customizes the behavior of the reset email
         const actionCodeSettings = {
-            url: 'http://localhost:3000/login', // This will be the login page
-            handleCodeInApp: false, // False means Firebase will handle the reset link in the web browser
+            url: 'http://localhost:3000/login', // Where to direct
+            handleCodeInApp: false, // false = browser
         };
 
         try {
             // Check if the email exists in the backend
-            const { data } = await axios.post('http://localhost:5000/api/checkUserExists', { email });
+            const { data } = await axios.post('/checkUserExists', { email });
             if (!data.exists) {
-                throw new Error('auth/user-not-found'); // Fix: Use Error object
+                throw new Error('auth/user-not-found'); //Use Error object
             }
 
-            // Attempt to send password reset email with redirection
+            // Sends a password reset email to the user
             await sendPasswordResetEmail(auth, email, actionCodeSettings);
+
             setSuccessMessage(`Password reset email sent to ${email}. Please check your inbox.`);
         } catch (error) {
             if (error.message === 'auth/user-not-found') {
@@ -50,7 +51,7 @@ const ForgotPassword = () => {
                     type="email"
                     placeholder="Enter your email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => setEmail(e.target.value)} //Real-Time State Update Before Submit
                     required
                     mt="sm"
                 />

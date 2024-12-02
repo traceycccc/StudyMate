@@ -6,14 +6,14 @@ import { useNavigate } from 'react-router-dom';
 
 const ModuleCard = ({ module, onToggleFavorite, onEditModule, onDeleteModule, onModuleClick }) => {
     const navigate = useNavigate(); // Initialize navigate
+    // navigate to flashcard page
     const handleFlashcardsClick = (moduleId) => {
-        navigate(`/modules/${moduleId}/overview/flashcards`, { state: { from: 'modules-main' } });
+        navigate(`/modules/${moduleId}/overview/flashcards`, { state: { from: 'modules-main' } }); //state to differenciate from the other button in ModuleOverview page
     };
 
 
     return (
         <Card
-            // style={{ width: '260px', position: 'relative', borderRadius: '8px', border: '1px solid #000000', padding: '0px' }}
             style={{ width: '260px', position: 'relative', borderRadius: '8px', border: '1.5px solid #91bfea', padding: '0px' }}
         >
             {/* Top Container (clickable) */}
@@ -68,8 +68,8 @@ const ModuleCard = ({ module, onToggleFavorite, onEditModule, onDeleteModule, on
                 <ActionIcon
                     onClick={() => onToggleFavorite(module.id, module.favorite)}
                     style={{
-                        backgroundColor: 'transparent', // Transparent background
-                        marginRight: '10px', // Add margin to the right for spacing
+                        backgroundColor: 'transparent', 
+                        marginRight: '10px', 
                         borderRadius: '30px',
                         transition: 'background-color 0.3s ease',
                     }}
@@ -84,8 +84,8 @@ const ModuleCard = ({ module, onToggleFavorite, onEditModule, onDeleteModule, on
                         <ActionIcon
                             style={{
                                 backgroundColor: 'transparent', // Set the default background color of the button
-                                color: 'black', // Default color of the icon
-                                transition: 'background-color 0.3s ease', // Smooth transition for hover
+                                color: 'black', 
+                                transition: 'background-color 0.3s ease', 
                             }}
                             radius="xl"
                             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#cde5fa')} // Hover color

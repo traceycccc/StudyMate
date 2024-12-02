@@ -8,7 +8,7 @@ import { deleteImageFromFirebase } from '../utils/uploadImage'; // Import the de
 import { firestore, auth } from '../firebase';
 import axios from 'axios';
 
-const storage = getStorage(); 
+const storage = getStorage(); // Firebase Storage initialization
 
 const NoteSection = ({ section, onEditSection, onDeleteSection, allSections }) => {
     const [expanded, setExpanded] = useState(false); //state to expand or not to display note items
@@ -59,7 +59,7 @@ const NoteSection = ({ section, onEditSection, onDeleteSection, allSections }) =
                 }
             );
 
-            return () => unsubscribe(); 
+            return () => unsubscribe(); // Cleanup the listener when component unmounts or section is collapsed
         }
     }, [expanded, section.id, section.moduleId]);
 
@@ -74,12 +74,12 @@ const NoteSection = ({ section, onEditSection, onDeleteSection, allSections }) =
             setIsAdding(true); // Start loading
             await addDoc(collection(firestore, 'notes'), {
                 name: newNoteName,
-                sectionId: section.id, 
-                type: 'plain', 
-                content: '', 
-                createdAt: new Date(), 
-                userId: auth.currentUser.uid, 
-                moduleId: section.moduleId, 
+                sectionId: section.id,
+                type: 'plain',
+                content: '',
+                createdAt: new Date(),
+                userId: auth.currentUser.uid,
+                moduleId: section.moduleId,
             });
 
             // Clear state after successful addition
@@ -92,7 +92,7 @@ const NoteSection = ({ section, onEditSection, onDeleteSection, allSections }) =
         } finally {
             setIsAdding(false); // End loading
         }
-        
+
     };
 
     // Handler to add a Code Note with file upload to Firebase Storage
@@ -125,7 +125,7 @@ const NoteSection = ({ section, onEditSection, onDeleteSection, allSections }) =
                 sectionId: section.id,
                 type: 'code',
                 fileURL,
-                content: '', 
+                content: '',
                 createdAt: new Date(),
                 userId: auth.currentUser.uid,
                 moduleId: section.moduleId,
@@ -173,15 +173,20 @@ const NoteSection = ({ section, onEditSection, onDeleteSection, allSections }) =
                 try {
                     //create empty js formData object
                     const formData = new FormData();
-                    formData.append('file', selectedFile); 
+                    //wrap the file in FormData object for HTTP transfer to the backend API for conversion
+                    //file state put as: Multipart/form-data (value of Content-Type)
+                    formData.append('file', selectedFile);
 
                     // send back the converted PDF as a blob
                     const response = await axios.post('http://localhost:5000/convert-to-pdf', formData, {
                         headers: { 'Content-Type': 'multipart/form-data' },
-                        responseType: 'blob', 
+                        responseType: 'blob', // Expect binary large obj response (binary data) for the PDF instead of JSON cuz its file
+                        // Blob: Represents raw binary data for files; 
+                        //cannot be directly parsed as text or JSON because the data isn't human-readable.
                     });
 
                     //wrap the blob data (response.data) into a new File object, representing the converted PDF
+                    //using File constructor
                     finalFile = new File([response.data], `${selectedFile.name.split('.')[0]}.pdf`, { type: 'application/pdf' });
                 } catch (error) {
                     console.error('Error converting file:', error);
@@ -194,10 +199,11 @@ const NoteSection = ({ section, onEditSection, onDeleteSection, allSections }) =
 
             // Upload the PDF file to Firebase Storage
             try {
-                
+                //upload the finalFile into firebase storage under 'documents/userID/file's name
                 const storageRef = ref(storage, `documents/${auth.currentUser.uid}/${finalFile.name}`);
                 await uploadBytes(storageRef, finalFile);
 
+                // Get the download URL for the uploaded PDF
                 const fileURL = await getDownloadURL(storageRef);
 
                 // Add note metadata to Firestore
@@ -206,7 +212,7 @@ const NoteSection = ({ section, onEditSection, onDeleteSection, allSections }) =
                     sectionId: section.id,
                     type: 'document',
                     fileURL,
-                    content: '', 
+                    content: '', // For the rich text editor
                     createdAt: new Date(),
                     userId: auth.currentUser.uid,
                     moduleId: section.moduleId,
@@ -234,7 +240,7 @@ const NoteSection = ({ section, onEditSection, onDeleteSection, allSections }) =
     const handleEditNote = (note) => {
         setEditNote(note);
         setNewNoteName(note.name); // update name
-        setIsEditNoteModalOpen(true); 
+        setIsEditNoteModalOpen(true);
     };
 
     // Save edited note name to Firestore
@@ -287,15 +293,15 @@ const NoteSection = ({ section, onEditSection, onDeleteSection, allSections }) =
                     contentArray.forEach((node) => {
                         if (node.type === 'image' && node.attrs && node.attrs.src) {
                             const imageUrl = node.attrs.src;// Extract the image URL
-                            console.log("Found image URL:", imageUrl); 
-                            fileDeletePromises.push(deleteImageFromFirebase(imageUrl));
+                            console.log("Found image URL:", imageUrl);
+                            fileDeletePromises.push(deleteImageFromFirebase(imageUrl));// Add file deletion to the promises
                         }
                     });
                 }
 
                 // Delete document or code file stored in 'fileURL'
                 if (noteData.fileURL) {
-                    console.log("Found file URL:", noteData.fileURL); 
+                    console.log("Found file URL:", noteData.fileURL);
                     const fileRef = ref(storage, noteData.fileURL);
                     fileDeletePromises.push(deleteObject(fileRef));// Add file deletion to the promises
                 }
@@ -372,11 +378,11 @@ const NoteSection = ({ section, onEditSection, onDeleteSection, allSections }) =
             )}
 
             {/* Modal for Adding Plain Note */}
-            <Modal 
+            <Modal
                 opened={isPlainNoteModalOpen}
-                onClose={() => { 
-                    setIsPlainNoteModalOpen(false); 
-                    setError(''); 
+                onClose={() => {
+                    setIsPlainNoteModalOpen(false);
+                    setError('');
                     setNewNoteName(''); //clear the note name
                 }}
                 title="Add Plain Note"
@@ -399,14 +405,14 @@ const NoteSection = ({ section, onEditSection, onDeleteSection, allSections }) =
 
 
             {/* Modal for Adding Code Note */}
-            <Modal 
-                opened={isCodeNoteModalOpen} 
-                onClose={() => { 
-                    setIsCodeNoteModalOpen(false); 
-                    setError(''); 
+            <Modal
+                opened={isCodeNoteModalOpen}
+                onClose={() => {
+                    setIsCodeNoteModalOpen(false);
+                    setError('');
                     setNewNoteName(''); //clear the note name
                     setSelectedFile(null);  //clear the selected file
-                }} 
+                }}
                 title="Add Code Note"
             >
                 <TextInput
@@ -433,11 +439,11 @@ const NoteSection = ({ section, onEditSection, onDeleteSection, allSections }) =
             </Modal>
 
             {/* Modal for Adding Document Note */}
-            <Modal 
+            <Modal
                 opened={isDocuNoteModalOpen}
-                onClose={() => { 
-                    setIsDocuNoteModalOpen(false); 
-                    setError(''); 
+                onClose={() => {
+                    setIsDocuNoteModalOpen(false);
+                    setError('');
                     setNewNoteName(''); //clear note name
                     setSelectedFile(null); //clear selected file
                 }}
@@ -468,8 +474,8 @@ const NoteSection = ({ section, onEditSection, onDeleteSection, allSections }) =
 
 
             {/* Modal for Editing Note */}
-            <Modal 
-                opened={isEditNoteModalOpen} 
+            <Modal
+                opened={isEditNoteModalOpen}
                 onClose={() => {
                     setIsEditNoteModalOpen(false);
                     setError(''); //clear note name

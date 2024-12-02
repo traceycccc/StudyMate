@@ -6,34 +6,39 @@ import FlashcardTextEditor from './FlashcardTextEditor';
 import { doc, updateDoc, deleteDoc, addDoc, collection, query, where, onSnapshot, getDocs } from 'firebase/firestore';
 import { firestore, auth } from '../firebase';
 
-const TagSection = ({ tag, flashcards, onEditTag, allTags }) => {
+const TagSection = ({ tag, flashcards, onEditTag, allTags }) => { //props
+    //tag
     const [opened, setOpened] = useState(false); // Toggle for collapse
     const [isEditModalOpen, setIsEditModalOpen] = useState(false); // Toggle for edit modal
     const [editedTagName, setEditedTagName] = useState(tag.name); // Store edited name
     const [editedTagColor, setEditedTagColor] = useState(tag.color); // Store edited color
     const [editError, setEditError] = useState(''); // Error state for edit validation
 
+    //flashcard
     const [isFlashcardModalOpen, setIsFlashcardModalOpen] = useState(false);
     const [isDeleteConfirmModalOpen, setIsDeleteConfirmModalOpen] = useState(false); // Confirmation modal for deletion
     const [questionContent, setQuestionContent] = useState('');
     const [answerContent, setAnswerContent] = useState('');
-    const [error, setError] = useState('');
     const [tagFlashcards, setTagFlashcards] = useState([]); // State to store flashcards for the tag
+    const [error, setError] = useState('');
 
     //loading states
     const [isSavingChanges, setIsSavingChanges] = useState(false);
     const [isDeletingTag, setIsDeletingTag] = useState(false);
     const [isSavingFlashcard, setIsSavingFlashcard] = useState(false);
 
-    const questionEditorRef = useRef(null);
+    //reference objects pointing to the FlashcardTextEditor instance, has direct access to its methods (e.g. getContent())
+    const questionEditorRef = useRef(null); //they hold .current property to refer/point
     const answerEditorRef = useRef(null);
 
-    const completedCount = tagFlashcards.filter((fc) => fc.completed).length;
+    //using fc (flashcard) as accumulator to get no. of flashcards completed
+    const completedCount = tagFlashcards.filter((fc) => fc.completed).length; 
     const totalFlashcards = tagFlashcards.length;
-    const progressPercentage = totalFlashcards > 0 ? (completedCount / totalFlashcards) * 100 : 0;
+    const progressPercentage = totalFlashcards > 0 ? (completedCount / totalFlashcards) * 100 : 0; // e.g. 50%
 
-    const toggleCollapse = () => setOpened((prev) => !prev);
+    const toggleCollapse = () => setOpened((prev) => !prev);//bool toggle
 
+    //fetch flashcards
     useEffect(() => {
         const userId = auth.currentUser?.uid;
         if (userId) {
@@ -41,7 +46,7 @@ const TagSection = ({ tag, flashcards, onEditTag, allTags }) => {
             const q = query(flashcardsRef, where('tagId', '==', tag.id), where('userId', '==', userId));
             const unsubscribe = onSnapshot(q, (snapshot) => {
                 const fetchedFlashcards = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-                setTagFlashcards(fetchedFlashcards);
+                setTagFlashcards(fetchedFlashcards); //save into state 'tagFlashcards'
             });
             return () => unsubscribe();
         }
@@ -67,18 +72,22 @@ const TagSection = ({ tag, flashcards, onEditTag, allTags }) => {
         setEditError('');
     };
 
+    //edit tag function
     const handleSaveChanges = async () => {
+
+        //validate empty
         if (!editedTagName.trim()) {
             setEditError('Tag name cannot be empty.');
             return;
         }
 
-        const isDuplicate = allTags.some(
+        //using allTags passed from Flashcards. the object map
+        const isDuplicate = allTags.some( //some: only have to find one matching
             (existingTag) =>
                 existingTag.name.toLowerCase() === editedTagName.trim().toLowerCase() &&
                 existingTag.id !== tag.id
         );
-
+        //validation for duplicate name when edit
         if (isDuplicate) {
             setEditError('Tag name must be unique within this module.');
             return;
@@ -105,12 +114,13 @@ const TagSection = ({ tag, flashcards, onEditTag, allTags }) => {
     const handleDeleteTag = async () => {
         try {
             setIsDeletingTag(true); // Start loading
+            //query
             const flashcardsQuery = query(collection(firestore, 'flashcards'), where('tagId', '==', tag.id));
-            const flashcardDocs = await getDocs(flashcardsQuery);
+            const flashcardDocs = await getDocs(flashcardsQuery); // get all flashcards of that tag
 
-            // Delete all flashcards associated with the tag
+            // Delete all flashcards associated with the tag, using tagId
             const deletePromises = flashcardDocs.docs.map((flashcard) => deleteDoc(doc(firestore, 'flashcards', flashcard.id)));
-            await Promise.all(deletePromises);
+            await Promise.all(deletePromises); //wait all flashcards are deleted using Promise
 
             // Delete the tag itself
             const tagRef = doc(firestore, 'tags', tag.id);
@@ -129,7 +139,9 @@ const TagSection = ({ tag, flashcards, onEditTag, allTags }) => {
         setIsDeleteConfirmModalOpen(true);
     };
 
+    //create new flashcard
     const saveFlashcard = async (clearAfterSave = false) => {
+        //get contents from the editors
         const questionContent = questionEditorRef.current?.getContent();
         const answerContent = answerEditorRef.current?.getContent();
         if (!questionContent.trim() || !answerContent.trim()) {
@@ -144,31 +156,7 @@ const TagSection = ({ tag, flashcards, onEditTag, allTags }) => {
             return;
         }
 
-        // const newFlashcard = {
-        //     question: questionContent,
-        //     answer: answerContent,
-        //     tagId: tag.id,
-        //     completed: false,
-        //     createdAt: new Date(),
-        //     userId,
-        //     rating: null,
-        //     moduleId: tag.moduleId,
-        // };
-
-        // try {
-        //     await addDoc(collection(firestore, 'flashcards'), newFlashcard);
-
-        //     if (clearAfterSave) {
-        //         setQuestionContent('');
-        //         setAnswerContent('');
-        //         questionEditorRef.current?.clearContent('');
-        //         answerEditorRef.current?.clearContent('');
-        //     } else {
-        //         closeFlashcardModal();
-        //     }
-        // } catch (error) {
-        //     console.error("Error adding flashcard:", error);
-        // }
+        
         try {
             setIsSavingFlashcard(true); // Start loading
             const newFlashcard = {
@@ -230,10 +218,10 @@ const TagSection = ({ tag, flashcards, onEditTag, allTags }) => {
                 </Menu>
             </div>
 
-            {/* Progress Tracking */}
+            {/* Progress Tracking using mantine progress component, progressPercentage is in percent*/}
             <div style={{ padding: '5px 15px 0', marginTop: '5px' }}>
                 <p style={{ color: tag.color }}>Progress: {completedCount}/{totalFlashcards} flashcards completed</p>
-                <Progress value={progressPercentage} color={tag.color} />
+                <Progress value={progressPercentage} color={tag.color} /> 
             </div>
 
             {/* Collapsible Flashcard List */}

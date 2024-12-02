@@ -37,25 +37,25 @@ const DocuNote = () => {
             setPdfReady(true);
         } else {
             console.error('PDF URL is missing. Redirecting back to the selection page.');
-            navigate(-1); 
+            navigate(-1);
         }
     }, [pdfUrl, navigate]);
 
     // Fetch the note data, mainly to check if note exists, and get the note name
     useEffect(() => {
         const fetchNote = async () => {
-            if (moduleId, sectionId, noteId) {
+            if (moduleId, sectionId, noteId) {// Ensure required IDs exist
                 try {
                     const noteRef = doc(firestore, 'notes', noteId);
-                    const noteSnap = await getDoc(noteRef); 
+                    const noteSnap = await getDoc(noteRef); //  Fetch the note data (whole)
                     if (noteSnap.exists()) {
-                        setNote(noteSnap.data());
+                        setNote(noteSnap.data());// Set note data in state
                     }
-                    
+
                 } catch (error) {
                     console.error('Error fetching note:', error);
                 } finally {
-                    setLoading(false);
+                    setLoading(false);// Stop the loading
                 }
             }
         };
@@ -64,7 +64,7 @@ const DocuNote = () => {
     }, [noteId, moduleId, sectionId]);
 
 
-   
+
 
     // Fetch tags specific to the current module
     const fetchTags = async () => {
@@ -90,16 +90,16 @@ const DocuNote = () => {
 
     //validate tag input (for creating new tag)
     const validateTagInputs = () => {
-        let isValid = true; 
+        let isValid = true; // fir if statement
 
-        
+        //clear error messages
         setNewTagNameError('');
         setSelectedTagError('');
 
         // Check if the new tag name already exists
         if (newTagName && tags.some(tag => tag.name === newTagName)) {
             setNewTagNameError("This tag name already exists. Please enter a unique name.");
-            isValid = false;
+            isValid = false;// Mark as invalid, tag name is not unique
         }
         return isValid;
     };
@@ -114,7 +114,7 @@ const DocuNote = () => {
         //no validation for selected tag here, proceed on generating flashcard
         try {
             const response = await fetch(pdfUrl); //http get response
-            const blob = await response.blob(); //convert to blob
+            const blob = await response.blob(); //convert to blob, standard practice and preserve MIME type (application/pdf)
             const file = new File([blob], 'document.pdf', { type: blob.type }); //make a file object
 
             //prepare form data
@@ -146,12 +146,12 @@ const DocuNote = () => {
 
             // Convert flashcards to HTML and save each to Firestore with tagId
             const flashcardPromises = flashcards.map(async (flashcard) => {
-                const questionHTML = `<p>${flashcard.question}</p>`; 
+                const questionHTML = `<p>${flashcard.question}</p>`; //wrap with <p> tags
                 const answerHTML = `<p>${flashcard.answer}</p>`;
                 const flashcardData = {
                     question: questionHTML,
                     answer: answerHTML,
-                    tagId: tagId,  
+                    tagId: tagId,  // Use the correct tag ID here
                     createdAt: new Date(),
                     userId: auth.currentUser?.uid,
                     completed: false,
@@ -177,7 +177,8 @@ const DocuNote = () => {
     // Helper function to clean the GPT response for generating flashcards
     const cleanJSONResponse = (response) => {
         console.log('response before cleaning', response);
-        const cleanedResponse = response.replace(/```json/g, '').replace(/```/g, ''); 
+        // Remove any extraneous backticks and "```json" markers if present
+        const cleanedResponse = response.replace(/```json/g, '').replace(/```/g, ''); // use global flag for all occurences
         console.log('response after cleaning', cleanedResponse);
         return cleanedResponse;
     };
@@ -186,7 +187,7 @@ const DocuNote = () => {
     // open flashcard modal
     const handleOpenFlashcardModal = async () => {
         // Fetch tags from Firestore
-        const fetchedTags = await fetchTags(); 
+        const fetchedTags = await fetchTags();
         setTags(fetchedTags);
         setFlashcardModalOpen(true);
     };
@@ -204,30 +205,30 @@ const DocuNote = () => {
 
         try {
             // Step 1: Fetch the PDF file as a Blob
-            const response = await fetch(pdfUrl); 
-            const blob = await response.blob() 
+            const response = await fetch(pdfUrl); // HTTP GET request to the given pdfUrl
+            const blob = await response.blob();// Convert into a Blob (binary data of PDF) 
 
             // Step 2: Wrap the Blob into a File object for compatibiliy with APIs which expect File object
             const file = new File([blob], 'document.pdf', { type: blob.type });
 
-            // Step 3: Prepare FormData to send to the backend under the 'file' key
+            // Step 3: Prepare FormData to send to the backend
             const formData = new FormData();
-            formData.append('file', file); 
+            formData.append('file', file); // Attach the File object under the 'file' key
 
             // Step 4: Send the file to the backend for summarization, data as output
             const { data } = await axios.post('/summarize-pdf', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }, 
+                headers: { 'Content-Type': 'multipart/form-data' }, // Ensure proper encoding
             });
 
             // Step 5: Insert the summary into the Rich Text Editor
             if (editorRef.current) {
-                editorRef.current.insertText(data.summary);
+                editorRef.current.insertText(data.summary);// using RTE's method to insert text
             }
 
         } catch (error) {
             console.error('Error summarizing the PDF:', error);
         } finally {
-            setIsProcessing(false); 
+            setIsProcessing(false); //stop indicator
         }
     };
 
@@ -279,10 +280,10 @@ const DocuNote = () => {
             //wrap the blob into a file object
             const file = new File([blob], 'document.pdf', { type: blob.type });
 
-            // prepare the FormData object to send the file and user prompt to backend , using keys 'file' and 'prompt'
-            const formData = new FormData(); 
-            formData.append('file', file); 
-            formData.append('prompt', userPrompt);
+            // prepare the FormData object to send the file and user prompt to backend
+            const formData = new FormData();
+            formData.append('file', file); //attach file
+            formData.append('prompt', userPrompt);// attach the qna prompt
 
             //send the FormData to the backend endpoint using axios, output data
             const { data } = await axios.post('http://localhost:5000/contextual-qa', formData, {
@@ -307,7 +308,7 @@ const DocuNote = () => {
 
     return (
         <Container fluid style={{ padding: '0px 0px 0px 0px' }}>
-            
+
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '20px' }}>
                 <button
                     onClick={() => navigate(-1)}
@@ -365,7 +366,7 @@ const DocuNote = () => {
                 </Button>
             </div>
 
-            
+
             <div style={{ display: 'flex', gap: '20px' }}>
 
                 {/* Document Viewer Section */}
@@ -449,13 +450,13 @@ const DocuNote = () => {
                             borderRadius: '4px',
                             border: '1px solid #ced4da',
                             fontSize: '14px',
-                            outline: 'none', 
+                            outline: 'none', // Removes black outline on focus
                         }}
                         onMouseDown={(e) => {
-                            e.target.style.borderColor = '#1c7ed6';
+                            e.target.style.borderColor = '#1c7ed6';//primry blue color by mantine
                         }}
                         onBlur={(e) => {
-                            e.target.style.borderColor = '#ced4da';
+                            e.target.style.borderColor = '#ced4da'; // Original border color
                         }}
                     >
                         <option value="">Select Tag</option>
@@ -468,7 +469,7 @@ const DocuNote = () => {
                     {selectedTagError && <p style={{ color: 'red', marginTop: '5px' }}>{selectedTagError}</p>}
 
                     <Button
-                        onClick={() => handleGenerateFlashcards()}  
+                        onClick={() => handleGenerateFlashcards()}  //  flashcard generation function
                         style={{ marginTop: '15px' }}
                         disabled={!selectedTag && !newTagName} //disable button if both are null
                     >

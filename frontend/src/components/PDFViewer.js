@@ -5,12 +5,16 @@ import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/toolbar/lib/styles/index.css';
 
 const PDFViewer = ({ pdfUrl }) => {
+    //initializes a plugin that adds a customizable toolbar to the PDF viewer
     const toolbarPluginInstance = toolbarPlugin();
+    //React component, allows to render the toolbar with specific controls like zoom
     const { Toolbar } = toolbarPluginInstance;
 
     return (
         <div style={styles.pdfContainer}>
+            {/* Fallback for Loading State */}
             {pdfUrl ? (
+                //render PDF. Worker component sets up a PDF.js worker, enabling efficient PDF rendering in a web browser
                 <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
                     <div
                         className="rpv-core__viewer"
@@ -33,6 +37,7 @@ const PDFViewer = ({ pdfUrl }) => {
                                 
                             }}
                         >
+                            {/* toolbar controls */}
                             <Toolbar>
                                 {(props) => {
                                     const {
@@ -89,6 +94,8 @@ const PDFViewer = ({ pdfUrl }) => {
                             </Toolbar>
                         </div>
                         <div style={{ flex: 1, overflow: 'hidden' }}>
+                            {/* The URL of the PDF to be displayed */}
+                            {/* Adds the toolbar functionality */}
                             <Viewer fileUrl={pdfUrl} plugins={[toolbarPluginInstance]} />
                         </div>
                     </div>

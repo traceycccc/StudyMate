@@ -16,7 +16,7 @@ import { Button } from '@mantine/core';
 const CodeNote = () => {
     const navigate = useNavigate();
     const { noteId } = useParams();
-    const [fileContent, setFileContent] = useState('');
+    const [fileContent, setFileContent] = useState(''); //code content
     const [note, setNote] = useState(null);
     const editorRef = useRef();
     const [isProcessing, setIsProcessing] = useState(false);
@@ -24,17 +24,17 @@ const CodeNote = () => {
     useEffect(() => {
         const fetchNoteData = async () => {
             try {
-                const noteRef = doc(firestore, 'notes', noteId);
-                const noteDoc = await getDoc(noteRef);
+                const noteRef = doc(firestore, 'notes', noteId); // Reference to the note document
+                const noteDoc = await getDoc(noteRef); //  Fetch the note data (whole)
                 if (noteDoc.exists()) {
                     const noteData = noteDoc.data();
-                    setNote(noteData);
+                    setNote(noteData);// Save note metadata in state
 
                     const fileRef = ref(storage, noteData.fileURL);
-                    const fileURL = await getDownloadURL(fileRef);
-                    const response = await fetch(fileURL);
-                    const text = await response.text();
-                    setFileContent(text);
+                    const fileURL = await getDownloadURL(fileRef); // Get the download URL for the file
+                    const response = await fetch(fileURL); // Fetch the file from Firebase Storage
+                    const text = await response.text(); // Read file content as text
+                    setFileContent(text); // put code  content in text into fileContent to display
                 } else {
                     console.error('Note not found.');
                 }
@@ -47,15 +47,15 @@ const CodeNote = () => {
     }, [noteId]);
 
     const handleExplainCode = async () => {
-        if (!fileContent) return;
-        setIsProcessing(true);
+        if (!fileContent) return;// Ensure there is code content to explain
+        setIsProcessing(true); // Show loading indicator
 
         try {
-            const response = await axios.post('/explain-code', { code: fileContent });
-            const explanation = response.data.explanation;
+            const response = await axios.post('/explain-code', { code: fileContent }); //feed code (dy in text) into the backend
+            const explanation = response.data.explanation; // get the response
 
-            if (editorRef.current) {
-                editorRef.current.insertText(explanation);
+            if (editorRef.current) { //use the 'remote controller' to use RTE's insertText
+                editorRef.current.insertText(explanation); // Insert the explanation into the rich text editor
             }
         } catch (error) {
             console.error('Error explaining code:', error);
@@ -63,7 +63,7 @@ const CodeNote = () => {
                 editorRef.current.insertText('Failed to explain the code.');
             }
         } finally {
-            setIsProcessing(false);
+            setIsProcessing(false); //closes loading indicator
         }
     };
 
@@ -93,9 +93,9 @@ const CodeNote = () => {
                     Back
                 </button>
 
-                <h1 style={{ margin: 0, fontWeight: 'bold', flex: 1 }}>
+                <h3 style={{ margin: 0, fontWeight: 'bold', flex: 1 }}>
                     {note ? note.name : 'Loading...'}
-                </h1>
+                </h3>
 
                 <Button
                     onClick={handleExplainCode}
@@ -131,9 +131,8 @@ const CodeNote = () => {
                 </div>
 
                 {/* Rich Text Editor Section */}
-                {/* <div style={{ flex: 1, height: '94%', overflowY: 'hidden' }}> */}
                 <div style={{ flex: 1, overflowY: 'hidden'  }}>
-
+                    {/*  interact with the editor's methods (e.g., insertText). */}
                     <RichTextEditor ref={editorRef} noteId={noteId}  />
                 </div>
             </div>

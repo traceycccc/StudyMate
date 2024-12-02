@@ -55,12 +55,12 @@ import { MathExtension } from '@aarkue/tiptap-math-extension';
 
 //other basics
 import Underline from '@tiptap/extension-underline'
-import Strike from '@tiptap/extension-strike';
-import BulletList from '@tiptap/extension-bullet-list';
-import OrderedList from '@tiptap/extension-ordered-list';
+// import Strike from '@tiptap/extension-strike';
+// import BulletList from '@tiptap/extension-bullet-list';
+// import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
-import Blockquote from '@tiptap/extension-blockquote';
-import HorizontalRule from '@tiptap/extension-horizontal-rule';
+// import Blockquote from '@tiptap/extension-blockquote';
+// import HorizontalRule from '@tiptap/extension-horizontal-rule';
 import TextStyle from '@tiptap/extension-text-style';
 import Color from '@tiptap/extension-color';
 
@@ -72,7 +72,7 @@ import TextAlign from '@tiptap/extension-text-align';
 import Typography from '@tiptap/extension-typography'
 
 //codes
-import Code from '@tiptap/extension-code';
+//import Code from '@tiptap/extension-code';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';  // Code block extension
 
 // Import necessary extensions for tables
@@ -124,12 +124,12 @@ const RichTextEditor = forwardRef(({ noteId, customHeight = '54vh' }, ref) => {
         extensions: [
             StarterKit,
             Underline,
-            Strike,  // Strike-through text
-            BulletList,
-            OrderedList,
-            ListItem,
-            Blockquote,
-            HorizontalRule,
+            // Strike,  // Strike-through text
+            // BulletList,
+            // OrderedList,
+            // ListItem,
+            // Blockquote,
+            // HorizontalRule,
             Highlight,
             TextAlign.configure({
                 types: ['heading', 'paragraph'],
@@ -155,12 +155,11 @@ const RichTextEditor = forwardRef(({ noteId, customHeight = '54vh' }, ref) => {
                 height: 480,
                 allowFullscreen: true,
             }),
-            Code,  // Inline code
+            //Code,  // Inline code
             CodeBlockLowlight.configure({
                 lowlight,  // Configure with lowlight
             }),
-            MathExtension.configure({  // Add the MathExtension
-                evaluation: true, // Set this to true if you want to enable expression evaluation
+            MathExtension.configure({ 
                 delimiters: 'dollar', // Configures to use $ and $$ for inline and block math
             }),
             TaskList,  // Add TaskList
@@ -256,6 +255,7 @@ const RichTextEditor = forwardRef(({ noteId, customHeight = '54vh' }, ref) => {
     };
 
 
+    //for LLM results
     useImperativeHandle(ref, () => ({
         insertText(text) {
             if (editor) {

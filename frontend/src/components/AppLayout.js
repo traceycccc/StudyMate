@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Outlet, useNavigate, useLocation, Navigate } from 'react-router-dom';
+import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { NavbarMinimal } from './NavbarMinimal';
 
 import Modules from '../screens/Modules';
@@ -21,8 +21,8 @@ import { auth } from '../firebase';
 
 const AppLayout = ({ user }) => {
 
-    const navigate = useNavigate(); // Initialize navigate
-    const location = useLocation(); // Get the current path
+    const navigate = useNavigate(); // Initialize navigate, redirects users programmatically
+    const location = useLocation(); // Get the current path to conditionally render components
 
 
 
@@ -42,6 +42,7 @@ const AppLayout = ({ user }) => {
     const shouldHideNavbar = location.pathname.includes('/test-session') || location.pathname.includes('/practice-flashcard');
 
 
+    // ensure that one user is logged out, stays in login page no matter which page they are
     if (!user) {
         return <Navigate to="/login" replace />;
     }
@@ -90,7 +91,6 @@ const AppLayout = ({ user }) => {
 
                     <Route path="/settings" element={<Settings />} />
                 </Routes>
-                <Outlet />
             </div>
         </div>
     );

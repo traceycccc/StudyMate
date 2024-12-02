@@ -4,9 +4,10 @@ import { storage } from '../firebase';  // Assuming your firebase.js is in src
 
 // function to add the image into firebase storage
 export const uploadImageToFirebase = async (file) => {
-    // Generate a unique name using timestamp or random string
+    // Generate a unique name using timestamp and the file's original name
     const uniqueFileName = `${Date.now()}-${file.name}`;
 
+    //Generate a Firebase Storage reference in the images/ directory with the unique file name.
     const storageRef = ref(storage, `images/${uniqueFileName}`);
 
     // Upload the file to Firebase Storage

@@ -78,7 +78,8 @@ const Register = () => {
         }
 
         try {
-            // Attempt to create the user with email and password
+            // create the user with email and password, with Firebase Authentication
+            //using Firebase's createUserWithEmailAndPassword
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
@@ -88,7 +89,7 @@ const Register = () => {
                 email: email
             });
 
-            // Send email verification
+            // Send email verification, extra layer of security to prevent spam or fake accounts.
             await sendEmailVerification(user);
 
             // Show success message and ask user to check their email
@@ -115,9 +116,9 @@ const Register = () => {
                     type="email"
                     placeholder="example@gmail.com"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => setEmail(e.target.value)}//Real-Time State Update Before Submit
                     required
-                    mt="sm"
+                    mt="sm"   //margin top prop using Mantine, xs, sm, md, lg, xl
                 />
                 <TextInput
                     label="Name"

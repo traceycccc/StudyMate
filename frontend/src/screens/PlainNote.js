@@ -11,22 +11,23 @@ const PlainNote = () => {
     const [note, setNote] = useState(null);
     const [loading, setLoading] = useState(true);
     const editorRef = useRef(); // Create a ref to hold the editor instance
-
-    // Fetch the note data
+    //Holds a reference to the RichTextEditor instance for future interactions
+    
+    // Fetch the note data, mainly to check if note exists, and get the note name
     useEffect(() => {
         const fetchNote = async () => {
 
-            if (moduleId, sectionId, noteId) {
+            if (moduleId, sectionId, noteId) {  // Ensure required IDs exist
                 try {
-                    const noteRef = doc(firestore, 'notes', noteId);
-                    const noteSnap = await getDoc(noteRef);
+                    const noteRef = doc(firestore, 'notes', noteId); // Reference to the note document
+                    const noteSnap = await getDoc(noteRef); //  Fetch the note data (whole)
                     if (noteSnap.exists()) {
-                        setNote(noteSnap.data());
+                        setNote(noteSnap.data()); // Set note data in state
                     }
                 } catch (error) {
                     console.error('Error fetching note:', error);
                 } finally {
-                    setLoading(false);
+                    setLoading(false);// Stop the loading
                 }
             }
         };
@@ -34,7 +35,7 @@ const PlainNote = () => {
         fetchNote();
     }, [noteId, moduleId, sectionId]);
 
-
+    //Conditional Rendering
     if (loading) return <div>Loading...</div>;
     if (!note) return <div>Note not found</div>;
 
@@ -64,9 +65,9 @@ const PlainNote = () => {
                     Back
                 </button>
 
-                <h1 style={{ margin: 0, fontWeight: 'bold', flex: 1 }}>
+                <h3 style={{ margin: 0, fontWeight: 'bold', flex: 1 }}>
                     {note ? note.name : 'Loading...'}
-                </h1>
+                </h3>
 
 
             </div>

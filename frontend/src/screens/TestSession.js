@@ -9,20 +9,22 @@ import { IconArrowLeft } from '@tabler/icons-react';
 const TestSession = () => {
     const location = useLocation();
     const navigate = useNavigate();
+    //Extracts the list of flashcardIds to test and the moduleId from the location.state passed by the navigation
     const { flashcardIds, moduleId } = location.state || {};
 
-    const [flashcards, setFlashcards] = useState([]);
-    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+    const [flashcards, setFlashcards] = useState([]); //Stores the flashcards to be tested, fetched from Firestore
+    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0); //Tracks current flashcard, index
     const [answer, setAnswer] = useState('');
-    const [progress, setProgress] = useState(0);
-    const [progressMap, setProgressMap] = useState({});
+    const [progress, setProgress] = useState(0); //percentage of completed flashcards in the session
+    const [progressMap, setProgressMap] = useState({}); //Track the rating and completion status for each flashcard
     const [isQuitModalOpen, setIsQuitModalOpen] = useState(false);
     const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
-    const [evaluationResult, setEvaluationResult] = useState(null);
+    const [evaluationResult, setEvaluationResult] = useState(null); //Stores the rating and explanation for the submitted answer
     const [isSubmitDisabled, setIsSubmitDisabled] = useState(false);
     const [error, setError] = useState('');
 
+    //for question and answer of flashcard, to be fed to gpt model
     const htmlToPlainText = (html) => {
         const tempElement = document.createElement("div");
         tempElement.innerHTML = html;
@@ -32,13 +34,17 @@ const TestSession = () => {
     };
 
     const fetchFlashcards = useCallback(async () => {
+        // Reference to the flashcards document
         const flashcardsRef = collection(firestore, 'flashcards');
-        const q = query(flashcardsRef, where('__name__', 'in', flashcardIds));
+
+        const q = query(flashcardsRef, where('__name__', 'in', flashcardIds)); //get flashcards by matching flashcard ids
         const querySnapshot = await getDocs(q);
+        //map into an array of usable objects
         const fetchedFlashcards = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setFlashcards(fetchedFlashcards);
+        setFlashcards(fetchedFlashcards); //put into state 'flashcards'
     }, [flashcardIds]);
 
+    //if no flashcard id array from Flashcards.js is found
     useEffect(() => {
         if (!flashcardIds || flashcardIds.length === 0) {
             alert("No flashcards found for this session.");
@@ -48,19 +54,25 @@ const TestSession = () => {
         }
     }, [flashcardIds, navigate, fetchFlashcards]);
 
+    //update progress
     useEffect(() => {
         if (flashcards.length > 0) {
-            const percentage = ((currentQuestionIndex + 1) / flashcards.length) * 100;
+            const percentage = ((currentQuestionIndex + 1) / flashcards.length) * 100; //have 1 since start from 1
             setProgress(percentage);
         }
     }, [currentQuestionIndex, flashcards.length]);
 
+
+    //handle submit answer
     const handleSubmitAnswer = async () => {
+        //must not be empty
         if (!answer.trim()) {
             setError("Answer cannot be empty.");
             return;
         }
         setError('');
+
+        //prepare the 3 things: question, answer, and user's answer
         const flashcard = flashcards[currentQuestionIndex];
         const questionText = htmlToPlainText(flashcard.question);
         const correctAnswerText = htmlToPlainText(flashcard.answer);
@@ -73,6 +85,7 @@ const TestSession = () => {
         `;
 
         try {
+            
             const response = await fetch('http://localhost:5000/evaluate-answer', {
                 method: 'POST',
                 headers: {
@@ -81,15 +94,20 @@ const TestSession = () => {
                 body: JSON.stringify({ promptText: evaluationPrompt }),
             });
 
-            const data = await response.json();
-            const { rating, explanation } = JSON.parse(data.evaluation);
+            //response is in raw HTTP response format
+            const data = await response.json();// extract the json body from the response, converted into json javascript object 
+            console.log('response json b4 parsing:', data)
 
+            //destructuring by extracting 'rating' & 'explanation'
+            const { rating, explanation } = JSON.parse(data.evaluation); 
+
+            // tracks the progress of the test session for each flashcard
             setProgressMap((prevMap) => ({
-                ...prevMap,
-                [flashcard.id]: { rating, completed: true },
+                ...prevMap, //old ones
+                [flashcard.id]: { rating, completed: true }, //the current one
             }));
 
-            setEvaluationResult({ rating, explanation });
+            setEvaluationResult({ rating, explanation }); // put the result into state 'evaluationResult'
             setIsSubmitDisabled(true);
 
         } catch (error) {
@@ -97,18 +115,20 @@ const TestSession = () => {
         }
     };
 
+    //handle next question button
     const handleNextQuestion = () => {
         setEvaluationResult(null);
         setIsSubmitDisabled(false);
         setAnswer('');
 
         if (currentQuestionIndex < flashcards.length - 1) {
-            setCurrentQuestionIndex(prevIndex => prevIndex + 1);
+            setCurrentQuestionIndex(prevIndex => prevIndex + 1);//go next flashcard question
         } else {
-            setIsCompletionModalOpen(true);
+            setIsCompletionModalOpen(true);//for when all flashcards are done
         }
     };
 
+    //test done, save progress
     const handleSaveProgressAndExit = async () => {
         setIsSaving(true);
         try {
@@ -118,8 +138,9 @@ const TestSession = () => {
                 throw new Error("Missing userId or moduleId");
             }
 
-            for (const [flashcardId, progressData] of Object.entries(progressMap)) {
-                const flashcardDocRef = doc(firestore, 'flashcards', flashcardId);
+            //destructure flashcardId and progressData
+            for (const [flashcardId, progressData] of Object.entries(progressMap)) { //Converts the progressMap object into an array of key-value pairs.
+                const flashcardDocRef = doc(firestore, 'flashcards', flashcardId); //get that flashcard
 
                 await updateDoc(flashcardDocRef, {
                     rating: progressData.rating,
@@ -141,10 +162,10 @@ const TestSession = () => {
     };
 
     const calculateScore = () => {
-        const totalQuestions = flashcards.length;
-        const completedRatings = Object.values(progressMap).map(entry => entry.rating);
-        const perfectScores = completedRatings.filter(score => score === 5).length;
-        const scorePercentage = (completedRatings.reduce((acc, score) => acc + score, 0) / (totalQuestions * 5)) * 100;
+        const totalQuestions = flashcards.length;//total number of questions (flashcards) in the session
+        const completedRatings = Object.values(progressMap).map(entry => entry.rating); //extracts the values (progress data) as an array
+        const perfectScores = completedRatings.filter(score => score === 5).length; //no. of flashcards with full marks
+        const scorePercentage = (completedRatings.reduce((acc, score) => acc + score, 0) / (totalQuestions * 5)) * 100; //percentage depending points
         return { scorePercentage, perfectScores };
     };
 
@@ -179,16 +200,16 @@ const TestSession = () => {
 
                 
             </div>
-            {/* <Button variant="subtle" onClick={() => setIsQuitModalOpen(true)} style={{ alignSelf: 'flex-start' }}>
-                ← Back
-            </Button> */}
+         
 
             <Progress value={progress} style={{ width: '100%',  marginTop: '10px', marginBottom: '40px', }} />
 
             {flashcards.length > 0 && (
-                <div style={{ marginTop: '30px', textAlign: 'center', maxWidth: '800px', width: '100%' }}>
+                <div style={{ marginTop: '0px', textAlign: 'center', maxWidth: '800px', width: '100%' }}>
                     <h2>Question {currentQuestionIndex + 1}</h2>
                     <FlashcardTextEditor content={flashcards[currentQuestionIndex].question} readOnly={true} />
+                    {console.log('Current Question:', htmlToPlainText(flashcards[currentQuestionIndex].question))}
+                    {console.log('Actual Answer:', htmlToPlainText(flashcards[currentQuestionIndex].answer))}
                 </div>
             )}
 
@@ -199,7 +220,7 @@ const TestSession = () => {
                     setAnswer(e.target.value);
                     if (error) setError('');
                 }}
-                style={{ marginTop: '20px', width: '100%', maxWidth: '800px' }}
+                style={{ marginTop: '10px', width: '100%', maxWidth: '800px' }}
                 disabled={isSubmitDisabled}
                 error={error}
                 styles={{
@@ -215,10 +236,13 @@ const TestSession = () => {
                 </Button>
             </div>
 
-            {evaluationResult && (
+
+            {/* show evaluation result modal when itself is there */}
+            {evaluationResult && ( 
                 <div style={{ marginTop: '20px', textAlign: 'center', maxWidth: '800px', width: '100%' }}>
                     <h3>Rating: {evaluationResult.rating}</h3>
                     <p>{evaluationResult.explanation}</p>
+                    {/* condition for when at last question, is Finish button */}
                     {currentQuestionIndex < flashcards.length - 1 ? (
                         <Button onClick={handleNextQuestion} style={{ marginTop: '10px' }}>
                             Next Question
@@ -231,6 +255,7 @@ const TestSession = () => {
                 </div>
             )}
 
+            {/* quit modal */}
             <Modal
                 opened={isQuitModalOpen}
                 onClose={() => setIsQuitModalOpen(false)}
@@ -244,6 +269,7 @@ const TestSession = () => {
                 </Group>
             </Modal>
 
+            {/* completion modal */}
             <Modal opened={isCompletionModalOpen} onClose={() => setIsCompletionModalOpen(false)} title="Test Completed">
                 <h3>Congratulations! You've completed the test.</h3>
                 <p>Score: {calculateScore().scorePercentage.toFixed(2)}%</p>

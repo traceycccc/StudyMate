@@ -15,20 +15,12 @@ import StarterKit from '@tiptap/starter-kit';
 import { Group } from '@mantine/core';
 import ImageResize from 'tiptap-extension-resize-image';
 import Underline from '@tiptap/extension-underline';
-import Strike from '@tiptap/extension-strike';
-import BulletList from '@tiptap/extension-bullet-list';
-import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
 import Highlight from '@tiptap/extension-highlight';
 import TextAlign from '@tiptap/extension-text-align';
 import Color from '@tiptap/extension-color';
 import TextStyle from '@tiptap/extension-text-style';
-import Code from '@tiptap/extension-code';
-import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { MathExtension } from '@aarkue/tiptap-math-extension';
-import { all, createLowlight } from 'lowlight';
-
-const lowlight = createLowlight(all);
 
 const FlashcardTextEditor = forwardRef((props, ref) => {
 
@@ -36,29 +28,23 @@ const FlashcardTextEditor = forwardRef((props, ref) => {
     const editor = useEditor({
         extensions: [
             StarterKit,
-            Underline,
-            Strike,
-            BulletList,
-            OrderedList,
-            ListItem,
+            Underline,            
             Highlight,
             TextAlign.configure({ types: ['heading', 'paragraph'] }),
             TextStyle,
             Color.configure({ types: [TextStyle.name, ListItem.name] }),
             ImageResize,
-            Code,
-            CodeBlockLowlight.configure({ lowlight }),
             MathExtension.configure({ delimiters: 'dollar' }),
         ],
         content: props.content || '',  // Start with provided content or empty string
         editable: !props.readOnly,  // Set editability based on readOnly prop
 
-        //onUpdate: props.readOnly ? undefined : undefined, // Disable autosave //no use
 
     });
 
 
     //manually get the editor content
+    //allows parent component to have access on clearContent() and getContent()
     useImperativeHandle(ref, () => ({
         clearContent() {
             editor?.commands.clearContent();

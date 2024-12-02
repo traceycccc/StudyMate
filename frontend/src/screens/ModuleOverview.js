@@ -1,16 +1,35 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Group } from '@mantine/core';
 import { IconArrowLeft } from '@tabler/icons-react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
+import { firestore } from '../firebase';
+import { getDoc, doc } from 'firebase/firestore';
 import NoteOrganizer from '../components/NoteOrganizer'; // Import NoteOrganizer
 
 const ModuleOverview = () => {
     const navigate = useNavigate();
-    const location = useLocation();
-    const { id: moduleId } = useParams(); // Assuming `moduleId` is obtained from the route params
-    const { moduleName } = location.state || { moduleName: 'Module' };
+    const location = useLocation();  //retrieves the current route's state (moduleName)
+    const { id: moduleId } = useParams(); // Extracts the id (module ID) from the URL as moduleId
+    const [moduleName, setModuleName] = useState(location.state?.moduleName || 'Module'); // Initial state from location
 
-    
+    // Fetch module name if not in location state
+    useEffect(() => {
+        if (!location.state?.moduleName) {
+            const fetchModuleName = async () => {
+                try {
+                    const moduleDoc = await getDoc(doc(firestore, 'modules', moduleId));
+                    if (moduleDoc.exists()) {
+                        setModuleName(moduleDoc.data().name);
+                    } else {
+                        console.error("Module not found.");
+                    }
+                } catch (error) {
+                    console.error("Error fetching module name:", error);
+                }
+            };
+            fetchModuleName();
+        }
+    }, [location.state?.moduleName, moduleId]);
 
     return (
         <div style={{ paddingTop: '0px' }}>
@@ -44,7 +63,7 @@ const ModuleOverview = () => {
                 color="blue" 
                 size="md" 
                 style={{ marginBottom: '20px' }}
-                onClick={() => navigate(`/modules/${moduleId}/overview/flashcards`, { state: { from: 'module-overview' } })}
+                onClick={() => navigate(`/modules/${moduleId}/overview/flashcards`, { state: { from: 'module-overview' } })} //Passes a state object (from: 'module-overview') to indicate the navigation origin
             >
                 Go to FlashCards
             </Button>

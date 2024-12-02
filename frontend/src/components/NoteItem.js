@@ -11,7 +11,7 @@ const NoteItem = ({ note, onEdit, onDelete, sections = [] }) => {
     const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
     const [selectedSection, setSelectedSection] = useState('');
 
-    // Determine which icon to show based on the note type
+    // Displays different icons depending on the type of the note
     const getNoteIcon = (type) => {
         switch (type) {
             case 'plain':
@@ -25,6 +25,7 @@ const NoteItem = ({ note, onEdit, onDelete, sections = [] }) => {
         }
     };
 
+    //Use react-router-dom's navigate to route users to different pages based on the note type
     const handleNoteClick = () => {
         if (note.type === 'plain') {
             navigate(`/modules/${note.moduleId}/overview/sections/${note.sectionId}/notes/${note.id}`);
@@ -39,6 +40,7 @@ const NoteItem = ({ note, onEdit, onDelete, sections = [] }) => {
     };
 
 
+    //Update the sectionId of the note in Firestore when moving to another section
     const handleMoveNote = async () => {
         if (!selectedSection) return;
 
@@ -93,16 +95,17 @@ const NoteItem = ({ note, onEdit, onDelete, sections = [] }) => {
             <div style={{ marginLeft: '10px' }}>
                 <Menu position="bottom-end">
                     <Menu.Target>
-                        <ActionIcon onClick={(e) => e.stopPropagation()}
+                        {/* <ActionIcon> */}
+                        <ActionIcon onClick={(e) => e.stopPropagation()}//make sure clicking it doesnt trigger the parent onClick
                             style={{
-                                backgroundColor: 'transparent', // Set the default background color of the button
-                                color: 'black', // Default color of the icon
-                                transition: 'background-color 0.3s ease', // Smooth transition for hover
+                                backgroundColor: 'transparent', 
+                                color: 'black', 
+                                transition: 'background-color 0.3s ease', 
                                 marginRight: '10px'
                             }}
-                            radius="xl"
+                            radius="xl" //xs, sm, md, lg, xl
                             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#B3D8FD')} // Hover color
-                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')} // Original color when not hovered
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')} 
                         >
                             <IconDots />
                         </ActionIcon>
@@ -135,7 +138,7 @@ const NoteItem = ({ note, onEdit, onDelete, sections = [] }) => {
                 <Button 
                     onClick={handleMoveNote} 
                     style={{ marginTop: '10px' }} 
-                    disabled={!selectedSection}
+                    disabled={!selectedSection} // Disable button if no section is selected
                 >
                     Move Note
                 </Button>

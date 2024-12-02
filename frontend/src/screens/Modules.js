@@ -24,10 +24,15 @@ const Modules = () => {
     const userId = auth.currentUser?.uid;
     const navigate = useNavigate(); // Initialize navigate
 
+    // fetching modules from firestore 
     useEffect(() => {
         if (userId) {
-            const q = query(collection(firestore, 'modules'), where('userId', '==', userId), orderBy('createdAt', 'desc'));
-            const unsubscribe = onSnapshot(q, (snapshot) => {
+            const q = query(
+                collection(firestore, 'modules'), 
+                where('userId', '==', userId), 
+                orderBy('createdAt', 'desc')
+            ); //arranged using descending order on date
+            const unsubscribe = onSnapshot(q, (snapshot) => { //firebase's onSnapshot listener to real-time updates in Firestore
                 const modulesData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 
                 const favoriteModules = modulesData.filter((module) => module.favorite);
@@ -35,7 +40,7 @@ const Modules = () => {
 
                 setModules({ favoriteModules, nonFavoriteModules });
             });
-            return () => unsubscribe();
+            return () => unsubscribe(); // react clean up function, stops the real-time listener
         }
     }, [userId]);
 
@@ -47,8 +52,9 @@ const Modules = () => {
             return;
         }
 
+        // get existing names  (and convert to lowercase)
         const moduleNames = [...modules.favoriteModules, ...modules.nonFavoriteModules].map((mod) => mod.name.toLowerCase());
-
+        //validate that the new module name is unique regardless of upper/lowercase
         if (moduleNames.includes(newModuleName.toLowerCase())) {
             setError('Module name already exists. Please choose a unique name.');
             return;
@@ -84,18 +90,16 @@ const Modules = () => {
             setError('Module name cannot be empty.');
             return;
         }
+
+        // get existing names  (and convert to lowercase)
         const moduleNames = [...modules.favoriteModules, ...modules.nonFavoriteModules]
             .filter((mod) => mod.id !== module.id)
             .map((mod) => mod.name.toLowerCase());
-
+        //validate that the new module name is unique regardless of upper/lowercase
         if (moduleNames.includes(editingModule.name.toLowerCase())) {
             setError('Module name already exists. Please choose a unique name.');
             return;
         }
-        // const moduleRef = doc(firestore, 'modules', module.id);
-        // await updateDoc(moduleRef, { name: editingModule.name, color: editingModule.color });
-        // setEditingModule(null);
-        // setError(''); // Clear error after successful edit
 
         try {
             setIsEditing(true); // Start loading
@@ -121,8 +125,7 @@ const Modules = () => {
     };
 
     const confirmDeleteModule = async () => {
-        // const confirmDelete = window.confirm('Are you sure you want to delete this module and all associated data?');
-        // if (!confirmDelete) return;
+        //get module ID
         const moduleId = confirmDeleteModal.moduleId;
 
         try {
@@ -152,30 +155,34 @@ const Modules = () => {
             const notesQuery = query(collection(firestore, 'notes'), where('moduleId', '==', moduleId));
             const notesSnapshot = await getDocs(notesQuery);
 
+            // Prepare to delete all associated notes and their files and images
             const noteDeletePromises = notesSnapshot.docs.map(async (noteDoc) => {
                 const noteData = noteDoc.data();
 
+                // create an array to put files to be deleted
                 const fileDeletePromises = [];
 
-                // Delete images from content's 'src' attributes
+                // get images from content's 'src' attributes
                 if (noteData.content && noteData.content.content) {
                     noteData.content.content.forEach((node) => {
-                        if (node.type === 'image' && node.attrs && node.attrs.src) {
+                        if (node.type === 'image' && node.attrs && node.attrs.src) {// Extract the image URL
                             fileDeletePromises.push(deleteImageFromFirebase(node.attrs.src));
                         }
                     });
                 }
 
-                // Delete any document or code file in 'fileURL'
+                // get any document or code file in 'fileURL'
                 if (noteData.fileURL) {
                     const fileRef = ref(storage, noteData.fileURL);
                     fileDeletePromises.push(deleteObject(fileRef));
                 }
 
+                // Wait for all associated files to be deleted before deleting the note
                 await Promise.all(fileDeletePromises);
                 return deleteDoc(noteDoc.ref);
             });
 
+            // out of the loop, wait for all notes and their files to be deleted
             await Promise.all(noteDeletePromises);
 
             // 5. Finally, delete the module itself
@@ -207,9 +214,9 @@ const Modules = () => {
             </Title>
             <Button onClick={() => {
                 setIsModalOpen(true);
-                setNewModuleName(''); // Clear module name when opening modal
-                setNewModuleColor('#FFFFFF'); // Reset color to default when opening modal
-                setError(''); // Clear error when opening the "Add New Module" modal
+                setNewModuleName(''); 
+                setNewModuleColor('#FFFFFF'); 
+                setError(''); 
             }}>
                 + New Module
             </Button>
@@ -257,9 +264,9 @@ const Modules = () => {
             {/* Add New Module Modal */}
             <Modal opened={isModalOpen} onClose={() => {
                 setIsModalOpen(false);
-                setNewModuleName(''); // Clear module name when closing modal
-                setNewModuleColor('#FFFFFF'); // Reset color to default when closing modal
-                setError(''); // Clear error when closing the "Add New Module" modal
+                setNewModuleName(''); 
+                setNewModuleColor('#FFFFFF');
+                setError('');
             }} title="Add New Module">
                 <TextInput
                     label="Module Name"

@@ -8,13 +8,13 @@ import { deleteImageFromFirebase } from '../utils/uploadImage';
 import NoteSection from './NoteSection';
 
 const NoteOrganizer = ({ moduleId }) => {
-    const [sections, setSections] = useState([]); 
+    const [sections, setSections] = useState([]); //List of sections of module.
     const [newSectionName, setNewSectionName] = useState('');
-    const [isModalOpen, setIsModalOpen] = useState(false); 
-    const [editingSection, setEditingSection] = useState(null); 
-    const [error, setError] = useState(''); 
-    const [confirmDeleteModal, setConfirmDeleteModal] = useState(false); 
-    const [sectionToDelete, setSectionToDelete] = useState(null); 
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingSection, setEditingSection] = useState(null); //for the section currently being edited
+    const [error, setError] = useState('');
+    const [confirmDeleteModal, setConfirmDeleteModal] = useState(false);
+    const [sectionToDelete, setSectionToDelete] = useState(null); //ID of the section selected for deletion
 
     // Loading states
     const [isAdding, setIsAdding] = useState(false);
@@ -38,7 +38,7 @@ const NoteOrganizer = ({ moduleId }) => {
                 setSections(sectionsData);
             });
 
-            return () => unsubscribe(); 
+            return () => unsubscribe(); // react clean up function, stops the real-time listener
         }
     }, [userId, moduleId]);
 
@@ -51,7 +51,8 @@ const NoteOrganizer = ({ moduleId }) => {
         }
 
         // Ensure unique name within the module
-        const sectionNames = sections.map((sec) => sec.name.toLowerCase()); 
+        //get all section names in a map to check
+        const sectionNames = sections.map((sec) => sec.name.toLowerCase());
         if (sectionNames.includes(newSectionName.toLowerCase())) {
             setError('Section name already exists. Please choose a unique name.');
             return;
@@ -87,8 +88,8 @@ const NoteOrganizer = ({ moduleId }) => {
 
         // Ensure unique name within the module
         const sectionNames = sections
-            .filter((sec) => sec.id !== section.id)// exclude current section 
-            .map((sec) => sec.name.toLowerCase());
+            .filter((sec) => sec.id !== section.id)// exclude the current section from the list
+            .map((sec) => sec.name.toLowerCase());// get the names of all remaining sections
 
         if (sectionNames.includes(editingSection.name.toLowerCase())) {
             setError('Section name already exists. Please choose a unique name.');
@@ -128,26 +129,27 @@ const NoteOrganizer = ({ moduleId }) => {
                 //getting note items of that section
                 const notesQuery = query(
                     collection(firestore, 'notes'),
-                    where('sectionId', '==', sectionToDelete)
+                    where('sectionId', '==', sectionToDelete)// Filter by the current section ID
                 );
                 const notesSnapshot = await getDocs(notesQuery);// Fetch all matching notes
 
                 // Prepare to delete all associated notes and their files and images
                 const deletePromises = notesSnapshot.docs.map(async (noteDoc) => {
-                    const noteData = noteDoc.data();
+                    const noteData = noteDoc.data(); // Extract note data (name, content, fileURL...)
 
+                    // create a Promises array, prepare to delete
                     const fileDeletePromises = [];
 
                     // find and delete images based on "src" attributes
                     if (noteData.content && noteData.content.content) {
-                        const contentArray = noteData.content.content; 
+                        const contentArray = noteData.content.content; // Extract contnt
 
-                        
+                        // scan content, find image nodes
                         contentArray.forEach((node) => {
                             if (node.type === 'image' && node.attrs && node.attrs.src) {
-                                const imageUrl = node.attrs.src;
+                                const imageUrl = node.attrs.src;// Extract the image URL
                                 console.log("Found image URL:", imageUrl);
-                                fileDeletePromises.push(deleteImageFromFirebase(imageUrl));
+                                fileDeletePromises.push(deleteImageFromFirebase(imageUrl));// add into promises
                             }
                         });
                     }
@@ -155,8 +157,8 @@ const NoteOrganizer = ({ moduleId }) => {
                     // Delete document or code file stored in 'fileURL'
                     if (noteData.fileURL) {
                         console.log("Found file URL:", noteData.fileURL);
-                        const fileRef = ref(storage, noteData.fileURL);
-                        fileDeletePromises.push(deleteObject(fileRef));
+                        const fileRef = ref(storage, noteData.fileURL);// Reference to the file 
+                        fileDeletePromises.push(deleteObject(fileRef));// Add to the promises
                     }
 
                     // Wait for all associated files to be deleted before deleting the note
@@ -167,7 +169,7 @@ const NoteOrganizer = ({ moduleId }) => {
                     return deleteDoc(noteDoc.ref);
                 });
 
-                // wait for all notes and their files to be deleted
+                // out of the loop, wait for all notes and their files to be deleted
                 await Promise.all(deletePromises);
 
                 // Finally, delete the section
@@ -209,8 +211,8 @@ const NoteOrganizer = ({ moduleId }) => {
                         allSections={sections} //whole section list, to check duplicate name
                         onEditSection={(sec) => {
                             setEditingSection(sec);
-                            console.log("Current editingSection:", sec); 
-                            setError(''); 
+                            console.log("Current editingSection:", sec); //has all the section's data
+                            setError(''); // Clear error when opening edit modal
                         }}
                         onDeleteSection={() => confirmDeleteSection(section.id)}
                     />
@@ -235,7 +237,7 @@ const NoteOrganizer = ({ moduleId }) => {
             </Modal>
 
             {/* Edit Section Modal */}
-            {editingSection && typeof editingSection === 'object' && ( 
+            {editingSection && typeof editingSection === 'object' && (
                 <Modal opened={editingSection} onClose={() => setEditingSection(null)} title="Edit Section">
                     <TextInput
                         label="Section Name"

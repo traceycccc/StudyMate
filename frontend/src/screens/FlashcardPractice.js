@@ -1,20 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { Card, Button, Text, TextInput, ActionIcon } from '@mantine/core';
-import { IconKeyboard, IconChevronLeft } from '@tabler/icons-react';
+import { IconKeyboard, IconArrowLeft } from '@tabler/icons-react';
 import { firestore } from '../firebase';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import FlashcardTextEditor from '../components/FlashcardTextEditor';
-import { IconArrowLeft } from '@tabler/icons-react'; 
+
 
 const FlashcardPractice = () => {
     const { tagId } = useParams();
     const location = useLocation();
     const initialFlashcardId = location.state?.flashcardId;
-    // const tagName = location.state?.tagName || "Flashcards"; // Ensure tag name is correctly passed
-    const [flashcards, setFlashcards] = useState([]);
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [showAnswer, setShowAnswer] = useState(false);
+    const [flashcards, setFlashcards] = useState([]); // list of flashcards for the selected tag
+    const [currentIndex, setCurrentIndex] = useState(0); // the flashcard currently displayed
+    const [showAnswer, setShowAnswer] = useState(false); //bool to toggle show or hide answer
     const [userAnswer, setUserAnswer] = useState('');
     const [showTextInput, setShowTextInput] = useState(false);
     const [tagName, setTagName] = useState("Flashcards");
@@ -22,7 +21,7 @@ const FlashcardPractice = () => {
 
     useEffect(() => {
 
-
+        // fetch tag name for page title
         const fetchTagName = async () => {
             if (!tagId) return;
 
@@ -38,7 +37,7 @@ const FlashcardPractice = () => {
             }
         };
 
-
+        //fetch flashcards of selected tagId passed from FlashcardCard.js
         const fetchFlashcards = async () => {
             if (!tagId) {
                 console.error("Error: tagId is undefined.");
@@ -46,19 +45,19 @@ const FlashcardPractice = () => {
             }
 
             try {
-                const flashcardsRef = collection(firestore, 'flashcards');
-                const q = query(flashcardsRef, where('tagId', '==', tagId));
+                const flashcardsRef = collection(firestore, 'flashcards'); // Reference to the flashcards document
+                const q = query(flashcardsRef, where('tagId', '==', tagId)); // get all flashcards of that tagId
                 const querySnapshot = await getDocs(q);
                 const fetchedFlashcards = querySnapshot.docs.map((doc) => ({
                     id: doc.id,
                     ...doc.data(),
                 }));
 
-                setFlashcards(fetchedFlashcards);
+                setFlashcards(fetchedFlashcards); //put in state 'flashcards' 
 
                 // Set the initial flashcard based on the clicked flashcard's ID
                 const initialIndex = fetchedFlashcards.findIndex(fc => fc.id === initialFlashcardId);
-                setCurrentIndex(initialIndex >= 0 ? initialIndex : 0);
+                setCurrentIndex(initialIndex >= 0 ? initialIndex : 0); //put in state 'currentIndex'
             } catch (error) {
                 console.error("Error fetching flashcards:", error);
             }
@@ -68,6 +67,10 @@ const FlashcardPractice = () => {
         fetchFlashcards();
     }, [tagId, initialFlashcardId]);
 
+    //get the current flashcard to display
+    const currentFlashcard = flashcards[currentIndex];
+
+    //if no flashcards to display (an error occured)
     if (flashcards.length === 0) {
         return (
             <Card>
@@ -77,22 +80,23 @@ const FlashcardPractice = () => {
         );
     }
 
-    const currentFlashcard = flashcards[currentIndex];
+    
 
     const handleNext = () => {
         setShowAnswer(false);
         setUserAnswer('');
         setShowTextInput(false);
-        setCurrentIndex((prevIndex) => (prevIndex + 1) % flashcards.length);
+        setCurrentIndex((prevIndex) => (prevIndex + 1) % flashcards.length); //next flashcard
     };
 
     const handlePrevious = () => {
         setShowAnswer(false);
         setUserAnswer('');
         setShowTextInput(false);
-        setCurrentIndex((prevIndex) => (prevIndex - 1 + flashcards.length) % flashcards.length);
+        setCurrentIndex((prevIndex) => (prevIndex - 1 + flashcards.length) % flashcards.length); //previous flashcard
     };
 
+    //bool toggles to view or hide
     const toggleAnswerVisibility = () => setShowAnswer((prev) => !prev);
     const toggleTextInput = () => setShowTextInput((prev) => !prev);
 
@@ -129,7 +133,7 @@ const FlashcardPractice = () => {
 
             {/* Main Card */}
             <Card shadow="sm" padding="lg" style={{ flexGrow: 1, width: '100%', maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
-                {/* Question Display */}
+                {/* Question Display (current, using 'currentFlashcard') */}
                 <Text weight={500} size="lg" style={{ marginBottom: '15px' }}>Question</Text>
                 <FlashcardTextEditor content={currentFlashcard.question} readOnly={true} />
 
@@ -168,7 +172,7 @@ const FlashcardPractice = () => {
                     {showAnswer ? 'Hide Answer' : 'Show Answer'}
                 </Button>
 
-                {/* Answer Display */}
+                {/* Answer Display, (current, using 'currentFlashcard') */}
                 {showAnswer && (
                     <>
                         <Text weight={500} size="lg" style={{ marginTop: '15px' }}>Answer</Text>

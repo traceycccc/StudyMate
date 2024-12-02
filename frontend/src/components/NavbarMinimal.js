@@ -5,7 +5,6 @@ import {
     UnstyledButton,
     Stack,
     rem,
-    useMantineTheme,
     Modal,
     Button,
     Text,
@@ -53,13 +52,12 @@ const NavbarLink = ({ icon: Icon, image, label, active, onClick }) => {
 };
 
 export const NavbarMinimal = ({ onLogout }) => {
-    const [active, setActive] = useState('home');
+    const [active, setActive] = useState('modules');
     const [logoutModalOpen, setLogoutModalOpen] = useState(false);
     const [sessionGoalsOpen, setSessionGoalsOpen] = useState(false);
-    const [goals, setGoals] = useState([]);
+    const [goals, setGoals] = useState([]); //array of session goals
     const [newGoalText, setNewGoalText] = useState(''); // State for input text
     const navigate = useNavigate();
-    const mantineTheme = useMantineTheme();
 
     const handleLogout = () => {
         setLogoutModalOpen(true);
@@ -74,8 +72,10 @@ export const NavbarMinimal = ({ onLogout }) => {
         setSessionGoalsOpen((prev) => !prev);
     };
 
+    //goal management functions
     const addGoal = () => {
         if (newGoalText.trim() !== '') { // Ensure goal text is not empty
+            //adds a new goal to the goals array with completed: false
             setGoals([...goals, { text: newGoalText, completed: false }]);
             setNewGoalText(''); // Clear input after adding
         }
@@ -83,13 +83,16 @@ export const NavbarMinimal = ({ onLogout }) => {
 
     const completeGoal = (index) => {
         const newGoals = goals.map((goal, i) =>
-            i === index ? { ...goal, completed: !goal.completed } : goal
+            //if else condition (condition ? valueIfTrue : valueIfFalse)
+            i === index ? { ...goal, completed: !goal.completed } : goal //!goal.completed toggles the state (true to false and vice versa)
         );
         setGoals(newGoals);
     };
 
     const removeGoal = (index) => {
-        const newGoals = goals.filter((_, i) => i !== index);
+        // using index, remove the goal wanted to be removed
+        //i is index of current goal
+        const newGoals = goals.filter((_, i) => i !== index); //put _ as not using first parameter (goal object)
         setGoals(newGoals);
     };
 
@@ -103,7 +106,7 @@ export const NavbarMinimal = ({ onLogout }) => {
                     height: '100vh',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    background: mantineTheme.colorScheme === 'dark' ? '#43618B' : '#A9D3FC',
+                    background: '#A9D3FC',
                     borderRight: '2px solid #91bfea'
                 }}
             >
@@ -175,8 +178,8 @@ export const NavbarMinimal = ({ onLogout }) => {
                             style={{
                                 flexGrow: 1, // Take up full width
                                 justifyContent: 'flex-start', // Align text to the left
-                                textAlign: 'left', // Align button content to the left
-                                padding: '10px', // Add padding for better look
+                                textAlign: 'left', 
+                                padding: '10px', 
                             }}
                         >
                             {goal.completed ? <s>{goal.text}</s> : goal.text}

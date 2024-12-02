@@ -21,14 +21,14 @@ const Settings = () => {
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const user = auth.currentUser;
+                const user = auth.currentUser; // Get the currently authenticated user
                 if (user) {
-                    const userDoc = doc(firestore, 'users', user.uid);
-                    const userSnapshot = await getDoc(userDoc);
+                    const userDoc = doc(firestore, 'users', user.uid); // Reference to the user's Firestore document
+                    const userSnapshot = await getDoc(userDoc);// Fetch the document
 
                     if (userSnapshot.exists()) {
-                        setUserData(userSnapshot.data());
-                        setProfilePic(userSnapshot.data().profilePic || null);
+                        setUserData(userSnapshot.data()); // Store user data in state
+                        setProfilePic(userSnapshot.data().profilePic || null); // Store profile picture URL
                     }
                 }
             } catch (error) {
@@ -38,33 +38,37 @@ const Settings = () => {
             }
         };
 
-        fetchUserData();
+        fetchUserData(); // Invoke the function
     }, []);
 
+    // Handles the selection and upload of a new profile picture
     const handleProfilePicChange = async (event) => {
-        const file = event.target.files[0];
+        const file = event.target.files[0]; // Get the selected file
         if (file) {
-            setProfilePic(URL.createObjectURL(file)); // Display a preview of the selected file
+            setProfilePic(URL.createObjectURL(file)); // Display the profile picture in the page
 
             try {
-                const user = auth.currentUser;
-                const storageRef = ref(storage, `profile_pics/${user.uid}`);
-                await uploadBytes(storageRef, file);
-                const downloadURL = await getDownloadURL(storageRef);
+                const user = auth.currentUser; // Get the currently authenticated user
+                const storageRef = ref(storage, `profile_pics/${user.uid}`); // Create a reference in Firebase Storage
+                await uploadBytes(storageRef, file); // Upload the file to Firebase Storage
+                const downloadURL = await getDownloadURL(storageRef); // Get the download URL
 
+                // Update the user's profile picture URL in Firestore
                 await updateDoc(doc(firestore, 'users', user.uid), { profilePic: downloadURL });
-                setUserData((prevData) => ({ ...prevData, profilePic: downloadURL }));
+                setUserData((prevData) => ({ ...prevData, profilePic: downloadURL })); // Update the state
             } catch (error) {
                 console.error("Error saving profile picture:", error);
             }
         }
     };
 
+    // Opens the modal for changing the user's name
     const handleChangeNameClick = () => {
         setNewName(userData.name); // Pre-fill the current name
         setNameModalOpen(true);
     };
 
+    // Saves the new name to Firestore
     const handleSaveName = async () => {
         if (newName.trim() === '') {
             setNameError('Name cannot be empty');
@@ -73,30 +77,36 @@ const Settings = () => {
 
         try {
             const user = auth.currentUser;
-            await updateDoc(doc(firestore, 'users', user.uid), { name: newName });
-            setUserData((prevData) => ({ ...prevData, name: newName }));
+            await updateDoc(doc(firestore, 'users', user.uid), { name: newName });// Update the name in Firestore
+            setUserData((prevData) => ({ ...prevData, name: newName })); // Update the local state
             setNameModalOpen(false);
         } catch (error) {
             console.error("Error updating name:", error);
         }
     };
 
+    // Opens the modal for changing the password
     const handleChangePasswordClick = () => {
+        
         setPasswordModalOpen(true);
+
         setCurrentPassword('');
         setNewPassword('');
+
         setCurrentPasswordError('');
         setNewPasswordError('');
     };
 
+    // Validates the strength of the new password
     const validatePasswordStrength = (password) => {
+        // Regex to enforce at least 8 characters, one uppercase, one number, and one special character
         const passwordRegex = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
         return passwordRegex.test(password);
     };
 
     const handleSavePassword = async () => {
-        let valid = true;
-        setCurrentPasswordError('');
+        let valid = true; // Flag to track input validity
+        setCurrentPasswordError('');// Clear previous error messages
         setNewPasswordError('');
 
         if (currentPassword.trim() === '') {
@@ -114,25 +124,29 @@ const Settings = () => {
             valid = false;
         }
 
-        if (!valid) return;
+        if (!valid) return;// Stop if validation fails
 
-        const user = auth.currentUser;
-        const credential = EmailAuthProvider.credential(user.email, currentPassword);
+        const user = auth.currentUser; // Get the currently authenticated user
+        // Create credentials for reauthentication, required in firebase for sensitive operation
+        //ensures that only the legitimate owner of the account can make critical changes.
+        const credential = EmailAuthProvider.credential(user.email, currentPassword); //must know current password
 
         try {
-            await reauthenticateWithCredential(user, credential);
-            await updatePassword(user, newPassword);
-            setPasswordModalOpen(false);
+            await reauthenticateWithCredential(user, credential);// Reauthenticate the user
+            await updatePassword(user, newPassword); // Update the user's password
+            setPasswordModalOpen(false); // Close the modal
         } catch (error) {
             console.error("Error changing password:", error);
-            setCurrentPasswordError('Incorrect current password');
+            setCurrentPasswordError('Incorrect current password'); // Set error if reauthentication fails
         }
     };
 
+    // Show a loading message while user data is being fetched
     if (loading) {
         return <Text>Loading...</Text>;
     }
 
+    // Show an error message if no user data is found
     if (!userData) {
         return <Text>No user data found.</Text>;
     }
@@ -173,7 +187,7 @@ const Settings = () => {
                             size="sm"
                             color="blue"
                             component="label"
-                            htmlFor="upload-profile-pic"
+                            htmlFor="upload-profile-pic" // Links this label to the input with id="upload-profile-pic"
                             style={{ cursor: 'pointer', marginTop: '10px' }}
                         >
                             Change Profile Picture

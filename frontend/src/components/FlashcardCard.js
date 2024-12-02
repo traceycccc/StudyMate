@@ -15,8 +15,10 @@ const FlashcardCard = ({ flashcard, onDelete }) => {
     const [loading, setLoading] = useState(false); // Loading state for save button
     const [isDeleting, setIsDeleting] = useState(false); // Loading state for delete button
 
-    const questionEditorRef = useRef(null);
+    // has direct access to its methods (e.g. getContent())
+    const questionEditorRef = useRef(null); //useRef .current property to refer/point
     const answerEditorRef = useRef(null);
+
     const navigate = useNavigate();
 
     // Open the edit modal
@@ -41,7 +43,7 @@ const FlashcardCard = ({ flashcard, onDelete }) => {
         setIsDeleteModalOpen(false);
     };
 
-    // Navigate to practice page
+    // Navigate to practice page, passing tagId of selected flashcard
     const handlePracticeView = () => {
         navigate(`/practice-flashcard/${flashcard.tagId}`, { state: { flashcardId: flashcard.id } });
     };
@@ -50,28 +52,28 @@ const FlashcardCard = ({ flashcard, onDelete }) => {
 
     // Save the edited flashcard to Firestore
     const saveEditedFlashcard = async () => {
-        // Get the content from both editors
+        // Get the content from both editors to save changes
         const updatedQuestionContent = questionEditorRef.current.getContent();
         const updatedAnswerContent = answerEditorRef.current.getContent();
 
-        // Debugging - Print content values
+        
         console.log("Updated question:", updatedQuestionContent);
         console.log("Updated answer:", updatedAnswerContent);
 
-        // Validate fields - check if content is truly empty
+        // Validate if content is empty
         const errors = {
             question: (!updatedQuestionContent || updatedQuestionContent.trim() === "<p></p>") ? 'Question cannot be empty.' : '',
             answer: (!updatedAnswerContent || updatedAnswerContent.trim() === "<p></p>") ? 'Answer cannot be empty.' : ''
         };
-
         setError(errors);
 
         // Check if there are any validation errors
         if (errors.question || errors.answer) return;
 
+        //if all ok, proceed to save changes
         setLoading(true); // Start loading
         try {
-            const flashcardRef = doc(firestore, 'flashcards', flashcard.id);
+            const flashcardRef = doc(firestore, 'flashcards', flashcard.id);// Reference to the flashcard document
             await updateDoc(flashcardRef, {
                 question: updatedQuestionContent,
                 answer: updatedAnswerContent,
@@ -90,7 +92,7 @@ const FlashcardCard = ({ flashcard, onDelete }) => {
     const handleDeleteFlashcard = async () => {
         try {
             setIsDeleting(true); // Start loading
-            const flashcardRef = doc(firestore, 'flashcards', flashcard.id);
+            const flashcardRef = doc(firestore, 'flashcards', flashcard.id); // Reference to the flashcard document
             await deleteDoc(flashcardRef);
             closeDeleteModal(); // Close modal after deleting
             console.log("Flashcard deleted successfully");
@@ -143,21 +145,21 @@ const FlashcardCard = ({ flashcard, onDelete }) => {
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 padding: '5px 10px', // Add padding to bottom bar if needed
-                borderTop: '1px solid #d1d1d1', // Top border to separate from content area
+                borderTop: '1px solid #d1d1d1', 
                 height: '60px' // Set a fixed height if needed for consistency
             }}>
-                <Text size="s">Last scored rating: {flashcard.rating || 'N/A'}/5</Text>
+                <Text size="ms">Last scored rating: {flashcard.rating || 'N/A'}/5</Text>
                 <Menu position="bottom-end">
                     <Menu.Target>
                         <ActionIcon
                             style={{
-                                backgroundColor: 'transparent', // Set the default background color of the button
-                                color: 'black', // Default color of the icon
-                                transition: 'background-color 0.3s ease', // Smooth transition for hover
+                                backgroundColor: 'transparent',
+                                color: 'black', 
+                                transition: 'background-color 0.3s ease', 
                             }}
                             radius="xl"
                             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#DDEFFF')} // Hover color
-                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')} // Original color when not hovered
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')} 
                         >
                             <IconDots />
                         </ActionIcon>
