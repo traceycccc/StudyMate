@@ -8,16 +8,18 @@ import { deleteImageFromFirebase } from '../utils/uploadImage'; // Import the de
 import { firestore, auth } from '../firebase';
 import axios from 'axios';
 
-const storage = getStorage(); // Firebase Storage initialization
+const storage = getStorage(); 
 
 const NoteSection = ({ section, onEditSection, onDeleteSection, allSections }) => {
-    const [expanded, setExpanded] = useState(false);
+    const [expanded, setExpanded] = useState(false); //state to expand or not to display note items
+
     const [isPlainNoteModalOpen, setIsPlainNoteModalOpen] = useState(false);
     const [isCodeNoteModalOpen, setIsCodeNoteModalOpen] = useState(false);
     const [isDocuNoteModalOpen, setIsDocuNoteModalOpen] = useState(false);
-    const [selectedFile, setSelectedFile] = useState(null);
+
+    const [selectedFile, setSelectedFile] = useState(null); // Holds the selected file (code/document)
     const [isEditNoteModalOpen, setIsEditNoteModalOpen] = useState(false);
-    const [newNoteName, setNewNoteName] = useState('');
+    const [newNoteName, setNewNoteName] = useState(''); //note item name
     const [editNote, setEditNote] = useState(null);
     const [isDeleteNoteModalOpen, setIsDeleteNoteModalOpen] = useState(false);
     const [noteToDelete, setNoteToDelete] = useState(null);
@@ -39,7 +41,7 @@ const NoteSection = ({ section, onEditSection, onDeleteSection, allSections }) =
             const q = query(
                 collection(firestore, 'notes'),
                 where('sectionId', '==', section.id),
-                orderBy('createdAt', 'desc')
+                orderBy('createdAt', 'asc')  //in descending order using date
             );
 
             const unsubscribe = onSnapshot(
@@ -57,7 +59,7 @@ const NoteSection = ({ section, onEditSection, onDeleteSection, allSections }) =
                 }
             );
 
-            return () => unsubscribe(); // Cleanup the listener when component unmounts or section is collapsed
+            return () => unsubscribe(); 
         }
     }, [expanded, section.id, section.moduleId]);
 
@@ -72,12 +74,12 @@ const NoteSection = ({ section, onEditSection, onDeleteSection, allSections }) =
             setIsAdding(true); // Start loading
             await addDoc(collection(firestore, 'notes'), {
                 name: newNoteName,
-                sectionId: section.id, // Linking the note to the section
-                type: 'plain', // Specify the type of note
-                content: '', // Empty content initially
-                createdAt: new Date(), // Store the creation date
-                userId: auth.currentUser.uid, // Add userId for Firestore rules
-                moduleId: section.moduleId, // Store moduleId as well
+                sectionId: section.id, 
+                type: 'plain', 
+                content: '', 
+                createdAt: new Date(), 
+                userId: auth.currentUser.uid, 
+                moduleId: section.moduleId, 
             });
 
             // Clear state after successful addition
@@ -95,8 +97,9 @@ const NoteSection = ({ section, onEditSection, onDeleteSection, allSections }) =
 
     // Handler to add a Code Note with file upload to Firebase Storage
     const handleAddCodeNote = async () => {
+        // if the inputs are null
         if (!newNoteName.trim() || !selectedFile) {
-            setError('Both note name and a valid code file are required.');
+            setError('Both note name and a code file are required.');
             return;
         }
 
@@ -121,8 +124,8 @@ const NoteSection = ({ section, onEditSection, onDeleteSection, allSections }) =
                 name: newNoteName,
                 sectionId: section.id,
                 type: 'code',
-                fileURL, // Store file URL in Firestore
-                content: '', // Empty content initially for rich text editor
+                fileURL,
+                content: '', 
                 createdAt: new Date(),
                 userId: auth.currentUser.uid,
                 moduleId: section.moduleId,
@@ -143,33 +146,42 @@ const NoteSection = ({ section, onEditSection, onDeleteSection, allSections }) =
 
     // Add Document + Note with file upload and conversion
     const handleAddDocuNote = async () => {
+
+        console.log("selected file:", selectedFile);
+        // validation for empty input
         if (!newNoteName.trim() || !selectedFile) {
-            setError('Both note name and a valid file are required.');
+            setError('Both note name and a file are required.');
             return;
         }
 
+        // validation for file type
         const allowedExtensions = ['pdf', 'docx', 'pptx'];
-        const fileExtension = selectedFile.name.split('.').pop().toLowerCase();
+        const fileExtension = selectedFile.name.split('.').pop().toLowerCase(); //get file type of selected file (e.g. png)
         if (!allowedExtensions.includes(fileExtension)) {
             setError('Invalid file type. Only PDF, DOCX, and PPTX are allowed.');
             return;
         }
 
+        //still as a file object
+
         try {
             setIsAdding(true); // Start loading
-            let finalFile = selectedFile;
+            let finalFile = selectedFile; // for files that are already PDF
 
             // Convert DOCX/PPTX to PDF if necessary using backend API
             if (fileExtension === 'docx' || fileExtension === 'pptx') {
                 try {
+                    //create empty js formData object
                     const formData = new FormData();
-                    formData.append('file', selectedFile);
+                    formData.append('file', selectedFile); 
 
+                    // send back the converted PDF as a blob
                     const response = await axios.post('http://localhost:5000/convert-to-pdf', formData, {
                         headers: { 'Content-Type': 'multipart/form-data' },
-                        responseType: 'blob', // Expect blob response for the PDF
+                        responseType: 'blob', 
                     });
 
+                    //wrap the blob data (response.data) into a new File object, representing the converted PDF
                     finalFile = new File([response.data], `${selectedFile.name.split('.')[0]}.pdf`, { type: 'application/pdf' });
                 } catch (error) {
                     console.error('Error converting file:', error);
@@ -182,10 +194,10 @@ const NoteSection = ({ section, onEditSection, onDeleteSection, allSections }) =
 
             // Upload the PDF file to Firebase Storage
             try {
+                
                 const storageRef = ref(storage, `documents/${auth.currentUser.uid}/${finalFile.name}`);
                 await uploadBytes(storageRef, finalFile);
 
-                // Get the download URL for the uploaded PDF
                 const fileURL = await getDownloadURL(storageRef);
 
                 // Add note metadata to Firestore
@@ -194,7 +206,7 @@ const NoteSection = ({ section, onEditSection, onDeleteSection, allSections }) =
                     sectionId: section.id,
                     type: 'document',
                     fileURL,
-                    content: '', // For the rich text editor
+                    content: '', 
                     createdAt: new Date(),
                     userId: auth.currentUser.uid,
                     moduleId: section.moduleId,
@@ -221,12 +233,13 @@ const NoteSection = ({ section, onEditSection, onDeleteSection, allSections }) =
     // Handler to edit an existing note
     const handleEditNote = (note) => {
         setEditNote(note);
-        setNewNoteName(note.name); // Set the note name to the current note's name
-        setIsEditNoteModalOpen(true); // Open the modal for editing
+        setNewNoteName(note.name); // update name
+        setIsEditNoteModalOpen(true); 
     };
 
     // Save edited note name to Firestore
     const handleSaveEditedNote = async () => {
+        //only validation is empty or not
         if (!newNoteName.trim()) {
             setError('Note name cannot be empty.');
             return;
@@ -264,7 +277,7 @@ const NoteSection = ({ section, onEditSection, onDeleteSection, allSections }) =
                 setIsDeleting(true); // Start loading
                 const noteData = noteToDelete;
 
-                // Delete associated files from storage
+                // Prepare to delete associated files from storage for the note
                 const fileDeletePromises = [];
 
                 // Check for images in content and delete based on "src" attributes
@@ -273,8 +286,8 @@ const NoteSection = ({ section, onEditSection, onDeleteSection, allSections }) =
 
                     contentArray.forEach((node) => {
                         if (node.type === 'image' && node.attrs && node.attrs.src) {
-                            const imageUrl = node.attrs.src;
-                            console.log("Found image URL:", imageUrl); // Debug: Log each image URL
+                            const imageUrl = node.attrs.src;// Extract the image URL
+                            console.log("Found image URL:", imageUrl); 
                             fileDeletePromises.push(deleteImageFromFirebase(imageUrl));
                         }
                     });
@@ -282,12 +295,13 @@ const NoteSection = ({ section, onEditSection, onDeleteSection, allSections }) =
 
                 // Delete document or code file stored in 'fileURL'
                 if (noteData.fileURL) {
-                    console.log("Found file URL:", noteData.fileURL); // Debug: Log file URL
+                    console.log("Found file URL:", noteData.fileURL); 
                     const fileRef = ref(storage, noteData.fileURL);
-                    fileDeletePromises.push(deleteObject(fileRef));
+                    fileDeletePromises.push(deleteObject(fileRef));// Add file deletion to the promises
                 }
 
                 try {
+                    // Wait for all associated files to be deleted before deleting the note
                     await Promise.all(fileDeletePromises);
 
                     // Delete the note from Firestore
@@ -410,7 +424,7 @@ const NoteSection = ({ section, onEditSection, onDeleteSection, allSections }) =
                     placeholder="Choose a code file"
                     value={selectedFile}
                     onChange={setSelectedFile}
-                    accept=".js,.py,.java,.cpp"
+                    accept=".php, .html, .css, .json, .js, .ts, .py, .java, .cpp, .cs, .ino, .m, .ipynb, .hex, .slx, .c"
                     error={error}
                 />
                 <Button onClick={handleAddCodeNote} loading={isAdding} style={{ marginTop: '10px' }}>
@@ -444,7 +458,7 @@ const NoteSection = ({ section, onEditSection, onDeleteSection, allSections }) =
                     placeholder="Choose a file"
                     value={selectedFile}
                     onChange={setSelectedFile}
-                    accept=".pdf,.docx,.pptx"
+                    accept=".pdf,.docx,.pptx" //add extra
                     error={error}
                 />
                 <Button onClick={handleAddDocuNote} loading={isAdding} style={{ marginTop: '10px' }}>

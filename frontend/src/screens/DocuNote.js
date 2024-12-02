@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import PDFViewer from '../components/PDFViewer';
-import { doc, getDoc, collection, getDocs, addDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs, addDoc, query, where } from 'firebase/firestore';
 import { firestore, auth } from '../firebase';
 import RichTextEditor from '../components/RichTextEditor';
 import { Container, Button, Modal, TextInput, Text } from '@mantine/core';
@@ -12,7 +12,7 @@ const DocuNote = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const pdfUrl = location.state?.pdfUrl;
-    const { noteId, moduleId } = useParams();
+    const { noteId, sectionId, moduleId } = useParams();
     const [note, setNote] = useState(null);
     const [loading, setLoading] = useState(true);
     const [pdfReady, setPdfReady] = useState(false);
@@ -20,7 +20,7 @@ const DocuNote = () => {
     const [qaModalOpen, setQaModalOpen] = useState(false);
     const [error, setError] = useState(''); // State to store validation error
     const [userPrompt, setUserPrompt] = useState('');
-    const editorRef = useRef();
+    const editorRef = useRef(); //controller given by RTE
     const [newTagNameError, setNewTagNameError] = useState('');
     const [selectedTagError, setSelectedTagError] = useState('');
 
@@ -31,25 +31,27 @@ const DocuNote = () => {
     const [newTagName, setNewTagName] = useState('');
     const [tags, setTags] = useState([]);
 
+    // check if pdf file is there to decide to stay or go back 
     useEffect(() => {
         if (pdfUrl) {
             setPdfReady(true);
         } else {
             console.error('PDF URL is missing. Redirecting back to the selection page.');
-            navigate('/modules'); // Adjust the path based on your module's route
+            navigate(-1); 
         }
     }, [pdfUrl, navigate]);
 
-    // Fetch the note data
+    // Fetch the note data, mainly to check if note exists, and get the note name
     useEffect(() => {
         const fetchNote = async () => {
-            if (noteId) {
+            if (moduleId, sectionId, noteId) {
                 try {
                     const noteRef = doc(firestore, 'notes', noteId);
-                    const noteSnap = await getDoc(noteRef);
+                    const noteSnap = await getDoc(noteRef); 
                     if (noteSnap.exists()) {
                         setNote(noteSnap.data());
                     }
+                    
                 } catch (error) {
                     console.error('Error fetching note:', error);
                 } finally {
@@ -59,39 +61,42 @@ const DocuNote = () => {
         };
 
         fetchNote();
-    }, [noteId]);
+    }, [noteId, moduleId, sectionId]);
 
+
+   
+
+    // Fetch tags specific to the current module
     const fetchTags = async () => {
         try {
+            if (!moduleId) {
+                console.error('Module ID is missing. Cannot fetch tags.');
+                return [];
+            }
+
+            // Query to get tags only for the current module
             const tagsRef = collection(firestore, 'tags');
-            const tagsSnapshot = await getDocs(tagsRef);
+            const tagsQuery = query(tagsRef, where('moduleId', '==', moduleId));
+            const tagsSnapshot = await getDocs(tagsQuery);
+
             const tagsData = tagsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             return tagsData;
         } catch (error) {
-            console.error("Error fetching tags:", error);
+            console.error('Error fetching tags:', error);
             return [];
         }
     };
 
 
-    // Helper function to clean the GPT response
-    const cleanJSONResponse = (response) => {
-        // Remove any extraneous backticks and "```json" markers if present
-        const cleanedResponse = response.replace(/```json/g, '').replace(/```/g, '');
-        return cleanedResponse;
-
-
-    };
-
-
-
-
+    //validate tag input (for creating new tag)
     const validateTagInputs = () => {
-        let isValid = true;
+        let isValid = true; 
+
+        
         setNewTagNameError('');
         setSelectedTagError('');
 
-     
+        // Check if the new tag name already exists
         if (newTagName && tags.some(tag => tag.name === newTagName)) {
             setNewTagNameError("This tag name already exists. Please enter a unique name.");
             isValid = false;
@@ -100,24 +105,30 @@ const DocuNote = () => {
     };
 
 
-
-
+    // LLM 4: generate flashcard
     const handleGenerateFlashcards = async () => {
-        // Validate inputs
+        // Validate new tag input
         if (!validateTagInputs()) return;
         setIsProcessing(true);
+
+        //no validation for selected tag here, proceed on generating flashcard
         try {
-            const response = await fetch(pdfUrl);
-            const blob = await response.blob();
-            const file = new File([blob], 'document.pdf', { type: blob.type });
+            const response = await fetch(pdfUrl); //http get response
+            const blob = await response.blob(); //convert to blob
+            const file = new File([blob], 'document.pdf', { type: blob.type }); //make a file object
+
+            //prepare form data
             const formData = new FormData();
-            formData.append('file', file);
+            formData.append('file', file); //put the file inside this "envelope" to be sent
             const { data } = await axios.post('http://localhost:5000/generate-flashcards', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
-            // Clean and parse the GPT response
+            // clean the GPT response (JSON in string)
             const cleanedData = cleanJSONResponse(data.flashcards);
+            //convert JSON string into a usable JavaScript object (an array of objects)
             const flashcards = JSON.parse(cleanedData);
+            console.log("parsed flashcards: ", flashcards);
+
             // Determine tag ID
             let tagId = selectedTag; // Use selected tag ID if available
             // If creating a new tag, save it first and get its ID
@@ -132,14 +143,15 @@ const DocuNote = () => {
                 tagId = newTagRef.id;  // Set tagId to the new tag's document ID
                 console.log("New tag created with ID:", tagId);
             }
+
             // Convert flashcards to HTML and save each to Firestore with tagId
             const flashcardPromises = flashcards.map(async (flashcard) => {
-                const questionHTML = `<p>${flashcard.question}</p>`;
+                const questionHTML = `<p>${flashcard.question}</p>`; 
                 const answerHTML = `<p>${flashcard.answer}</p>`;
                 const flashcardData = {
                     question: questionHTML,
                     answer: answerHTML,
-                    tagId: tagId,  // Use the correct tag ID here
+                    tagId: tagId,  
                     createdAt: new Date(),
                     userId: auth.currentUser?.uid,
                     completed: false,
@@ -162,51 +174,64 @@ const DocuNote = () => {
         }
     };
 
+    // Helper function to clean the GPT response for generating flashcards
+    const cleanJSONResponse = (response) => {
+        console.log('response before cleaning', response);
+        const cleanedResponse = response.replace(/```json/g, '').replace(/```/g, ''); 
+        console.log('response after cleaning', cleanedResponse);
+        return cleanedResponse;
+    };
 
 
-
-
-
+    // open flashcard modal
     const handleOpenFlashcardModal = async () => {
-        // Fetch tags from Firestore or another source
-        const fetchedTags = await fetchTags(); // Assuming fetchTags is a function that fetches tags
+        // Fetch tags from Firestore
+        const fetchedTags = await fetchTags(); 
         setTags(fetchedTags);
         setFlashcardModalOpen(true);
     };
 
-    const handleContextualQA = async () => {
-        if (!pdfUrl || !userPrompt) {
-            console.error('PDF URL or user prompt is missing.');
+
+    //LLM 1: summarization
+    const handleSummarizePdf = async () => {
+        // Validate if a valid PDF URL is provided
+        if (!pdfUrl) {
+            console.error('PDF URL is missing.');
             return;
         }
 
-        setIsProcessing(true);
+        setIsProcessing(true);// Indicate that processing is in progress
 
         try {
-            const response = await fetch(pdfUrl);
-            const blob = await response.blob();
+            // Step 1: Fetch the PDF file as a Blob
+            const response = await fetch(pdfUrl); 
+            const blob = await response.blob() 
+
+            // Step 2: Wrap the Blob into a File object for compatibiliy with APIs which expect File object
             const file = new File([blob], 'document.pdf', { type: blob.type });
 
+            // Step 3: Prepare FormData to send to the backend under the 'file' key
             const formData = new FormData();
-            formData.append('file', file);
-            formData.append('prompt', userPrompt);
+            formData.append('file', file); 
 
-            const { data } = await axios.post('http://localhost:5000/contextual-qa', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
+            // Step 4: Send the file to the backend for summarization, data as output
+            const { data } = await axios.post('/summarize-pdf', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }, 
             });
 
+            // Step 5: Insert the summary into the Rich Text Editor
             if (editorRef.current) {
-                editorRef.current.insertText(data.answer);
+                editorRef.current.insertText(data.summary);
             }
+
         } catch (error) {
-            console.error('Error processing contextual Q&A:', error);
+            console.error('Error summarizing the PDF:', error);
         } finally {
-            setIsProcessing(false);
-            setQaModalOpen(false);
-            setUserPrompt('');
+            setIsProcessing(false); 
         }
     };
 
+    //LLM 2: key concepts 
     const handleKeyConcepts = async () => {
         if (!pdfUrl) {
             console.error('PDF URL is missing.');
@@ -238,39 +263,42 @@ const DocuNote = () => {
         }
     };
 
-    // Function to handle PDF summarization
-    const handleSummarizePdf = async () => {
-        if (!pdfUrl) {
-            console.error('PDF URL is missing.');
+
+    // LLM 3: contextual Q&A
+    const handleContextualQA = async () => {
+        if (!pdfUrl || !userPrompt) {
+            console.error('PDF URL or user prompt is missing.');
             return;
         }
 
         setIsProcessing(true);
 
         try {
-            // Fetch the PDF file as a Blob
-            const response = await fetch(pdfUrl);
-            const blob = await response.blob();
+            const response = await fetch(pdfUrl); // fetch PDF using url
+            const blob = await response.blob(); //convert into Binary large object type
+            //wrap the blob into a file object
             const file = new File([blob], 'document.pdf', { type: blob.type });
 
-            // Prepare FormData
-            const formData = new FormData();
-            formData.append('file', file);
+            // prepare the FormData object to send the file and user prompt to backend , using keys 'file' and 'prompt'
+            const formData = new FormData(); 
+            formData.append('file', file); 
+            formData.append('prompt', userPrompt);
 
-            // Send the PDF file to the backend for summarization
-            const { data } = await axios.post('/summarize-pdf', formData, {
+            //send the FormData to the backend endpoint using axios, output data
+            const { data } = await axios.post('http://localhost:5000/contextual-qa', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
 
-            // Set the summary content in the editor
+            //insert into RTE using the RTE's method 'insertText'
             if (editorRef.current) {
-                editorRef.current.insertText(data.summary);
+                editorRef.current.insertText(data.answer);
             }
-
         } catch (error) {
-            console.error('Error summarizing the PDF:', error);
+            console.error('Error processing contextual Q&A:', error);
         } finally {
             setIsProcessing(false);
+            setQaModalOpen(false);
+            setUserPrompt('');
         }
     };
 
@@ -278,7 +306,6 @@ const DocuNote = () => {
     if (!note) return <div>Note not found</div>;
 
     return (
-        // <Container fluid style={{ padding: '0px 20px 20px 20px' }}>
         <Container fluid style={{ padding: '0px 0px 0px 0px' }}>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '20px' }}>
@@ -304,9 +331,9 @@ const DocuNote = () => {
                     Back
                 </button>
 
-                <h1 style={{ margin: 0, fontWeight: 'bold', flex: 1 }}>
+                <h3 style={{ margin: 0, fontWeight: 'bold', flex: 1 }}>
                     {note ? note.name : 'Loading...'}
-                </h1>
+                </h3>
 
                 <Button
                     onClick={handleSummarizePdf}
@@ -345,7 +372,7 @@ const DocuNote = () => {
                 <div style={{ flex: 1, height: '83vh', overflowY: 'hidden', borderRadius: '8px', backgroundColor: '#F8F8FF' }}>
 
                     {pdfReady ? (
-                        <PDFViewer pdfUrl={pdfUrl} />
+                        <PDFViewer pdfUrl={pdfUrl} /> //get the file url to open
                     ) : (
                         <p>Loading PDF...</p>
                     )}
@@ -400,7 +427,7 @@ const DocuNote = () => {
                     <TextInput
                         label="Select or Create Tag"
                         placeholder="Select an existing tag or enter a new one"
-                        value={newTagName}
+                        value={newTagName} // create new tag
                         onChange={(event) => {
                             setNewTagName(event.currentTarget.value);
                             setNewTagNameError(''); // Clear any existing error
@@ -409,7 +436,7 @@ const DocuNote = () => {
                         error={newTagNameError} // Display error message for new tag name
                     />
                     <select
-                        value={selectedTag}
+                        value={selectedTag} //selected a created tag
                         onChange={(e) => {
                             setSelectedTag(e.target.value);
                             setSelectedTagError(''); // Clear any existing error
@@ -422,13 +449,13 @@ const DocuNote = () => {
                             borderRadius: '4px',
                             border: '1px solid #ced4da',
                             fontSize: '14px',
-                            outline: 'none', // Removes black outline on focus
+                            outline: 'none', 
                         }}
                         onMouseDown={(e) => {
-                            e.target.style.borderColor = '#1c7ed6';//primry blue color by mantine
+                            e.target.style.borderColor = '#1c7ed6';
                         }}
                         onBlur={(e) => {
-                            e.target.style.borderColor = '#ced4da'; // Original border color
+                            e.target.style.borderColor = '#ced4da';
                         }}
                     >
                         <option value="">Select Tag</option>
@@ -441,9 +468,9 @@ const DocuNote = () => {
                     {selectedTagError && <p style={{ color: 'red', marginTop: '5px' }}>{selectedTagError}</p>}
 
                     <Button
-                        onClick={() => handleGenerateFlashcards()}  // This function will be added later for flashcard generation logic
+                        onClick={() => handleGenerateFlashcards()}  
                         style={{ marginTop: '15px' }}
-                        disabled={!selectedTag && !newTagName}
+                        disabled={!selectedTag && !newTagName} //disable button if both are null
                     >
                         Generate
                     </Button>

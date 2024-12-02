@@ -1,3 +1,4 @@
+//Note Organizer, add,edit, delete note sections
 import React, { useState, useEffect } from 'react';
 import { Button, Modal, TextInput } from '@mantine/core';
 import { auth, firestore, storage } from '../firebase';
@@ -7,13 +8,13 @@ import { deleteImageFromFirebase } from '../utils/uploadImage';
 import NoteSection from './NoteSection';
 
 const NoteOrganizer = ({ moduleId }) => {
-    const [sections, setSections] = useState([]);
+    const [sections, setSections] = useState([]); 
     const [newSectionName, setNewSectionName] = useState('');
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [editingSection, setEditingSection] = useState(null);
-    const [error, setError] = useState(''); // Validation error message
-    const [confirmDeleteModal, setConfirmDeleteModal] = useState(false);
-    const [sectionToDelete, setSectionToDelete] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false); 
+    const [editingSection, setEditingSection] = useState(null); 
+    const [error, setError] = useState(''); 
+    const [confirmDeleteModal, setConfirmDeleteModal] = useState(false); 
+    const [sectionToDelete, setSectionToDelete] = useState(null); 
 
     // Loading states
     const [isAdding, setIsAdding] = useState(false);
@@ -29,15 +30,15 @@ const NoteOrganizer = ({ moduleId }) => {
                 collection(firestore, 'sections'),
                 where('userId', '==', userId),
                 where('moduleId', '==', moduleId),
-                orderBy('createdAt', 'desc')
+                orderBy('createdAt', 'asc')
             );
-
+            //firebase's onSnapshot listener to real-time updates in Firestore
             const unsubscribe = onSnapshot(q, (snapshot) => {
                 const sectionsData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
                 setSections(sectionsData);
             });
 
-            return () => unsubscribe(); // Cleanup
+            return () => unsubscribe(); 
         }
     }, [userId, moduleId]);
 
@@ -50,13 +51,13 @@ const NoteOrganizer = ({ moduleId }) => {
         }
 
         // Ensure unique name within the module
-        const sectionNames = sections.map((sec) => sec.name.toLowerCase());
-
+        const sectionNames = sections.map((sec) => sec.name.toLowerCase()); 
         if (sectionNames.includes(newSectionName.toLowerCase())) {
             setError('Section name already exists. Please choose a unique name.');
             return;
         }
 
+        //proceed if name isnt empty or duplicate
         try {
             setIsAdding(true); // Start loading
             await addDoc(collection(firestore, 'sections'), {
@@ -85,13 +86,16 @@ const NoteOrganizer = ({ moduleId }) => {
         }
 
         // Ensure unique name within the module
-        const sectionNames = sections.filter((sec) => sec.id !== section.id).map((sec) => sec.name.toLowerCase());
+        const sectionNames = sections
+            .filter((sec) => sec.id !== section.id)// exclude current section 
+            .map((sec) => sec.name.toLowerCase());
 
         if (sectionNames.includes(editingSection.name.toLowerCase())) {
             setError('Section name already exists. Please choose a unique name.');
             return;
         }
 
+        //proceed if name is unique and not empty
         try {
             setIsEditing(true); // Start loading
             const sectionRef = doc(firestore, 'sections', section.id);
@@ -113,32 +117,36 @@ const NoteOrganizer = ({ moduleId }) => {
         setConfirmDeleteModal(true);
     };
 
- 
+
 
     const handleDeleteSection = async () => {
+        // Ensure there is a section selected for deletion
         if (sectionToDelete) {
-            try{
-                setIsDeleting(true); // Start loading
+            try {
+                setIsDeleting(true);
+
+                //getting note items of that section
                 const notesQuery = query(
                     collection(firestore, 'notes'),
                     where('sectionId', '==', sectionToDelete)
                 );
-                const notesSnapshot = await getDocs(notesQuery);
+                const notesSnapshot = await getDocs(notesQuery);// Fetch all matching notes
 
+                // Prepare to delete all associated notes and their files and images
                 const deletePromises = notesSnapshot.docs.map(async (noteDoc) => {
                     const noteData = noteDoc.data();
 
-                    // Delete associated files from storage
                     const fileDeletePromises = [];
 
-                    // Check for images in content and delete based on "src" attributes
+                    // find and delete images based on "src" attributes
                     if (noteData.content && noteData.content.content) {
-                        const contentArray = noteData.content.content;
+                        const contentArray = noteData.content.content; 
 
+                        
                         contentArray.forEach((node) => {
                             if (node.type === 'image' && node.attrs && node.attrs.src) {
                                 const imageUrl = node.attrs.src;
-                                console.log("Found image URL:", imageUrl); // Debug: Log each image URL
+                                console.log("Found image URL:", imageUrl);
                                 fileDeletePromises.push(deleteImageFromFirebase(imageUrl));
                             }
                         });
@@ -146,18 +154,20 @@ const NoteOrganizer = ({ moduleId }) => {
 
                     // Delete document or code file stored in 'fileURL'
                     if (noteData.fileURL) {
-                        console.log("Found file URL:", noteData.fileURL); // Debug: Log file URL
+                        console.log("Found file URL:", noteData.fileURL);
                         const fileRef = ref(storage, noteData.fileURL);
                         fileDeletePromises.push(deleteObject(fileRef));
                     }
 
+                    // Wait for all associated files to be deleted before deleting the note
                     await Promise.all(fileDeletePromises);
 
-                    // Log before deleting the note document
+                    // Delete that note
                     console.log("Deleting note document with ID:", noteDoc.id);
                     return deleteDoc(noteDoc.ref);
                 });
 
+                // wait for all notes and their files to be deleted
                 await Promise.all(deletePromises);
 
                 // Finally, delete the section
@@ -169,7 +179,7 @@ const NoteOrganizer = ({ moduleId }) => {
             } catch (error) {
                 console.error('Error deleting section and associated notes:', error);
             } finally {
-                setIsDeleting(false); // End loading
+                setIsDeleting(false); // End loading state
             }
         }
     };
@@ -195,13 +205,13 @@ const NoteOrganizer = ({ moduleId }) => {
                 {sections.map((section) => (
                     <NoteSection
                         key={section.id}
-                        section={section}
-                        allSections={sections}
+                        section={section} //that section
+                        allSections={sections} //whole section list, to check duplicate name
                         onEditSection={(sec) => {
                             setEditingSection(sec);
-                            setError(''); // Clear error when opening edit modal
+                            console.log("Current editingSection:", sec); 
+                            setError(''); 
                         }}
-                        // onDeleteSection={handleDeleteSection}
                         onDeleteSection={() => confirmDeleteSection(section.id)}
                     />
                 ))}
@@ -225,12 +235,13 @@ const NoteOrganizer = ({ moduleId }) => {
             </Modal>
 
             {/* Edit Section Modal */}
-            {editingSection && (
-                <Modal opened={!!editingSection} onClose={() => setEditingSection(null)} title="Edit Section">
+            {editingSection && typeof editingSection === 'object' && ( 
+                <Modal opened={editingSection} onClose={() => setEditingSection(null)} title="Edit Section">
                     <TextInput
                         label="Section Name"
                         value={editingSection.name}
                         onChange={(e) => {
+                            //Real-Time State Update Before Submit
                             setEditingSection({ ...editingSection, name: e.currentTarget.value });
                             setError(''); // Clear error on input change
                         }}
@@ -249,8 +260,8 @@ const NoteOrganizer = ({ moduleId }) => {
                 title="Confirm Delete"
             >
                 <p>Are you sure you want to delete this section and all associated notes?</p>
-                <Button 
-                    color="red" 
+                <Button
+                    color="red"
                     onClick={handleDeleteSection}
                     loading={isDeleting}
                 >

@@ -7,16 +7,15 @@ import { collection, addDoc, getDocs, onSnapshot, query, where, doc, getDoc } fr
 import { IconArrowLeft } from '@tabler/icons-react';
 
 const Flashcards = () => {
-    const { moduleId } = useParams();
+    const { moduleId } = useParams(); 
     const navigate = useNavigate();
-    // const location = useLocation();
 
-    const [moduleName, setModuleName] = useState(''); // New state for module name
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [newTagName, setNewTagName] = useState('');
-    const [newTagColor, setNewTagColor] = useState('#228be6');
-    const [tags, setTags] = useState([]);
-    const [flashcardsByTag, setFlashcardsByTag] = useState({});
+    //manage module name, aag and flashcards
+    const [moduleName, setModuleName] = useState(''); 
+    const [isModalOpen, setIsModalOpen] = useState(false); 
+    const [newTagName, setNewTagName] = useState(''); 
+    const [newTagColor, setNewTagColor] = useState('#228be6'); // default tag color
+    const [tags, setTags] = useState([]); //list of tags
     const [error, setError] = useState('');
 
     // Loading states
@@ -26,13 +25,15 @@ const Flashcards = () => {
 
 
     //--------------------------------------------------------------------------------------------------------
+    //states for test flashcards modal
     const [isTestModalOpen, setIsTestModalOpen] = useState(false);
-    const [tagsWithFlashcards, setTagsWithFlashcards] = useState([]);
+    const [flashcardsByTag, setFlashcardsByTag] = useState({}); //object  (step 1: get all flashcards)
+    const [tagsWithFlashcards, setTagsWithFlashcards] = useState([]); //array (step 2: get tags for selection)
     const [selectedTags, setSelectedTags] = useState([]);
-    const [tagSelectionError, setTagSelectionError] = useState(''); // error state for tag selection
+    const [tagSelectionError, setTagSelectionError] = useState(''); 
     const [maxFlashcards, setMaxFlashcards] = useState(0);
     const [numFlashcardsToTest, setNumFlashcardsToTest] = useState(1);
-    const[numFlashcardsError, setNumFlashcardsError] = useState(''); // error state for flashcard number input
+    const[numFlashcardsError, setNumFlashcardsError] = useState(''); 
 
 
 
@@ -42,7 +43,7 @@ const Flashcards = () => {
             try {
                 const moduleDoc = await getDoc(doc(firestore, 'modules', moduleId));
                 if (moduleDoc.exists()) {
-                    setModuleName(moduleDoc.data().name); // Assuming the module name is stored as 'name'
+                    setModuleName(moduleDoc.data().name); //set module's name using 'name' into state ModuleName
                 } else {
                     console.error("Module not found.");
                 }
@@ -53,47 +54,60 @@ const Flashcards = () => {
         fetchModuleName();
     }, [moduleId]);
 
-    // Handler for "Test Flashcards" button click
+    // open "Test Flashcards" modal and fetch tags and flashcards
     const handleOpenTestModal = async () => {
         setIsTestModalOpen(true);
         console.log("Fetching flashcards and tags...");
 
         try {
-            const userId = auth.currentUser?.uid;
-            const flashcardsRef = collection(firestore, 'flashcards');
-            const tagsRef = collection(firestore, 'tags');
+            //(step 1)
+            const userId = auth.currentUser?.uid; // Get current user ID
+            const flashcardsRef = collection(firestore, 'flashcards'); 
+            const tagsRef = collection(firestore, 'tags'); 
 
-            // Query to get all flashcards belonging to the current user
+            // Query to fetch all flashcards belonging to the current user
             const flashcardsSnapshot = await getDocs(
-                query(flashcardsRef, where('userId', '==', userId))
+                query(flashcardsRef, where('userId', '==', userId), where('moduleId', '==', moduleId))
             );
 
-            // Collect flashcard data and group by tagId
-            const flashcardsMap = {};
+            // create a map to group flashcards by their tagId
+            const flashcardsMap = {}; //flashcards mapping an object
             flashcardsSnapshot.forEach(doc => {
-                const flashcard = { id: doc.id, ...doc.data() };
-                const { tagId } = flashcard;
+                const flashcard = { id: doc.id, ...doc.data() }; //get flashcard data including id
+                const { tagId } = flashcard; //extract tagId from data
 
-                if (!flashcardsMap[tagId]) flashcardsMap[tagId] = [];
-                flashcardsMap[tagId].push(flashcard);
+                // initialise array for a tag if not exist yet in the map
+                if (!flashcardsMap[tagId]) flashcardsMap[tagId] = []; 
+                flashcardsMap[tagId].push(flashcard); //add flashcard into the array of respective tag
             });
-            setFlashcardsByTag(flashcardsMap);
+
+            //put the map data into 'flashcardsByTag'
+            setFlashcardsByTag(flashcardsMap); //has the data but no tag name
             console.log("Flashcards grouped by tagId:", flashcardsMap);
 
-            // Map of tags that have associated flashcards
-            const tagsWithFlashcardsMap = [];
-            for (let tagId in flashcardsMap) {
-                const tagSnapshot = await getDocs(query(tagsRef, where('__name__', '==', tagId)));
-                if (!tagSnapshot.empty) {
-                    const tagData = tagSnapshot.docs[0].data();
+
+
+            //(step 2)
+            // get tag names and make an array list of Tags with Flashcard Counts
+            const tagsWithFlashcardsMap = []; 
+            for (let tagId in flashcardsMap) { 
+                // query, fetch the tag document with the matching tagId to get tags' names
+                const tagSnapshot = await getDocs(query(tagsRef, where('__name__', '==', tagId), where('moduleId', '==', moduleId)));
+                if (!tagSnapshot.empty) { 
+                
+                    //since its an array, use [0]
+                    const tagData = tagSnapshot.docs[0].data(); 
+
                     tagsWithFlashcardsMap.push({
                         tagId,
-                        tagName: tagData.name,
-                        flashcardCount: flashcardsMap[tagId].length,
+                        tagName: tagData.name, // get the tag's name from firestore
+                        flashcardCount: flashcardsMap[tagId].length, //number of flashcards
                     });
                 }
             }
-            setTagsWithFlashcards(tagsWithFlashcardsMap);
+
+            //put this set of array data to 'tagsWithFlashcards' to display in test settings modal
+            setTagsWithFlashcards(tagsWithFlashcardsMap);  
             console.log("Mapped tags with flashcards:", tagsWithFlashcardsMap);
 
         } catch (error) {
@@ -101,25 +115,25 @@ const Flashcards = () => {
         }
     };
 
-    // Update max flashcards based on selected tags
+   
+    //handle the selection of tags in the MultiSelect component
     const handleTagSelectionChange = (selected) => {
         setSelectedTags(selected);
-        setTagSelectionError(''); // Reset error on change
+        setTagSelectionError('');
 
-        // Automatically adjusts the number if number exceeds the max number
+        // calculate the total number of flashcards available for the selected tags
         const totalAvailable = tagsWithFlashcards
-            .filter(tag => selected.includes(tag.tagId))
-            .reduce((acc, tag) => acc + tag.flashcardCount, 0);
+            .filter(tag => selected.includes(tag.tagId)) // filter: include only the selected ones
+            .reduce((acc, tag) => acc + tag.flashcardCount, 0); 
 
-        setMaxFlashcards(totalAvailable);
-        setNumFlashcardsToTest(Math.min(numFlashcardsToTest, totalAvailable));
+        setMaxFlashcards(totalAvailable); // put the result number in state 
         console.log("Total available flashcards for selected tags:", totalAvailable); 
         setNumFlashcardsError(''); // Reset error when max flashcards updates
     };
 
 
-    const handleStartTest = () => {
-
+    const handleStartTest = () => { //uses (step 1) object map to get flashcard IDs
+        // if no tags are selected, no tag objects
         if (selectedTags.length === 0) {
             setTagSelectionError('Please select at least one tag to start the test.');
             return;
@@ -137,32 +151,40 @@ const Flashcards = () => {
 
         try {
             setIsStartingTest(true); // Start loading
-            const totalToTest = numFlashcardsToTest;
+            const totalToTest = numFlashcardsToTest; 
+
+            //a Set to store unique flashcard IDs for the test (Set is array but ensures no duplicates)
             let flashcardIdsToTest = new Set();
 
-            // Step 1: Pick one flashcard from each selected tag
-            selectedTags.forEach((tagId) => {
-                const flashcardsForTag = flashcardsByTag[tagId] || [];
-                if (flashcardsForTag.length > 0) {
-                    const randomFlashcard = flashcardsForTag[Math.floor(Math.random() * flashcardsForTag.length)];
-                    flashcardIdsToTest.add(randomFlashcard.id); // Ensures at least one flashcard is added
-                }
+            // Step 1: Pick one flashcard from each selected tag (at least 1 flashcard from each tag)
+            selectedTags.forEach((tagId) => { 
+                //retrieve all that selected tagId's flashcards from (step 1) object map
+                const flashcardsForTag = flashcardsByTag[tagId]; 
+                
+                //randomly gets a number (index) from 0 to length of array
+                const randomFlashcard = flashcardsForTag[Math.floor(Math.random() * flashcardsForTag.length)];
+                flashcardIdsToTest.add(randomFlashcard.id); 
+                
             });
 
             // Step 2: Fill remaining slots randomly from all selected tags, without duplicates
-            while (flashcardIdsToTest.size < totalToTest) {
+            while (flashcardIdsToTest.size < totalToTest) {// numbers
+                
                 const randomTagId = selectedTags[Math.floor(Math.random() * selectedTags.length)];
-                const flashcardsForTag = flashcardsByTag[randomTagId] || [];
 
-                // Pick a random flashcard from the chosen tag, ensuring it isn't already picked
-                if (flashcardsForTag.length > 0) {
-                    const randomFlashcard = flashcardsForTag[Math.floor(Math.random() * flashcardsForTag.length)];
-                    flashcardIdsToTest.add(randomFlashcard.id); // Set prevents duplicates automatically
-                }
+                //retrieve all that randomTagId's flashcards from (step 1) object map
+                const flashcardsForTag = flashcardsByTag[randomTagId];
 
-                // Break if we run out of flashcards to prevent infinite loop
+                
+                const randomFlashcard = flashcardsForTag[Math.floor(Math.random() * flashcardsForTag.length)];
+                //add the flashcard's id into the Set
+                flashcardIdsToTest.add(randomFlashcard.id); 
+                
+
+                //get total available flashcards
                 const totalAvailableFlashcards = selectedTags.reduce((acc, tagId) => acc + (flashcardsByTag[tagId]?.length || 0), 0);
-                if (flashcardIdsToTest.size >= totalAvailableFlashcards) break;
+                
+                if (flashcardIdsToTest.size >= totalAvailableFlashcards) break; 
             }
 
             // Convert the set to an array for logging or further usage
@@ -190,14 +212,14 @@ const Flashcards = () => {
 
 
     //------------------------------------------------------------------------------------------------------------
-
+    // display tags, flashcards
     useEffect(() => {
         const userId = auth.currentUser?.uid;
         const tagsRef = collection(firestore, 'tags');
         const q = query(tagsRef, where('userId', '==', userId), where('moduleId', '==', moduleId));
         const unsubscribeTags = onSnapshot(q, (snapshot) => {
             const fetchedTags = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-            setTags(fetchedTags);
+            setTags(fetchedTags); //put all fetched tags data into 'tags' state
         });
 
         // Fetch all flashcards grouped by tagId
@@ -229,9 +251,10 @@ const Flashcards = () => {
             return;
         }
 
-        const isDuplicate = tags.some(
+        const isDuplicate = tags.some( // .some() only needs one match to return true
             (tag) => tag.name.toLowerCase() === newTagName.trim().toLowerCase()
         );
+
         if (isDuplicate) {
             setError('Tag name must be unique within this module.');
             return;
@@ -276,7 +299,7 @@ const Flashcards = () => {
     return (
         <div style={{ padding: '0px 0px 0px 0px' }}>
             <button
-                onClick={() => navigate(-1)}
+                onClick={() => navigate(`/modules/${moduleId}/overview`, { state: { moduleName } })}
                 style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -319,18 +342,18 @@ const Flashcards = () => {
 
             {/* Modal to set Test Setting */}
             <Modal
-                opened={isTestModalOpen}
-                onClose={() => setIsTestModalOpen(false)}
+                opened={isTestModalOpen}// Controls modal be visible or not
+                onClose={() => setIsTestModalOpen(false)} //close modal
                 title="Test Flashcards"
             >
                 <MultiSelect
                     label="Select Tags to Test"
                     placeholder="Choose tags"
-                    data={tagsWithFlashcards.map(tag => ({
+                    data={tagsWithFlashcards.map(tag => ({ //using (step 2: tags for selection)
                         value: tag.tagId,
                         label: tag.tagName
                     }))}
-                    onChange={handleTagSelectionChange}
+                    onChange={handleTagSelectionChange}// Callback to handle changes when tags are selected or deselected
                 />
                 {/* error message for no tags selected */}
                 {tagSelectionError && <Text color="red" size="sm">{tagSelectionError}</Text>}
@@ -376,7 +399,7 @@ const Flashcards = () => {
                     placeholder="Enter tag name"
                     value={newTagName}
                     onChange={(e) => {
-                        setNewTagName(e.currentTarget.value);
+                        setNewTagName(e.currentTarget.value); //real time update
                         setError('');
                     }}
                     error={error}
@@ -403,11 +426,11 @@ const Flashcards = () => {
             {/* Render each TagSection */}
             {tags.map((tag) => (
                 <TagSection
+                //props
                     key={tag.id}
-                    tag={tag}
-                    flashcards={flashcardsByTag[tag.id] || []} // Pass flashcards by tagId
-                    allTags={tags}
-                    onEditTag={() => setTags((prevTags) => [...prevTags])} // optional callback to refresh
+                    tag={tag} //that tag's data
+                    allTags={tags} // for checking duplicate name when edit tag
+                    onEditTag={() => setTags((prevTags) => [...prevTags])} 
                 />
             ))}
         </div>
